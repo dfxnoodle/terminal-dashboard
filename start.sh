@@ -42,9 +42,16 @@ fi
 cd backend
 
 # Activate virtual environment if it exists
-if [ -d "../.venv" ]; then
-    echo "📦 Using Python virtual environment"
+if [ -n "$VIRTUAL_ENV" ]; then
+    echo "📦 Using active Python virtual environment: $VIRTUAL_ENV"
+    PYTHON_CMD="python"
+elif [ -d "../.venv" ]; then
+    echo "📦 Activating Python virtual environment"
     source ../.venv/bin/activate
+    PYTHON_CMD="python"
+elif [ -d ".venv" ]; then
+    echo "📦 Activating Python virtual environment"
+    source .venv/bin/activate
     PYTHON_CMD="python"
 elif command -v uv &> /dev/null; then
     echo "📦 Using uv for dependency management"
@@ -81,6 +88,15 @@ else
 fi
 
 cd ../frontend
+
+# Set API URL for network mode
+if [ "$EXPOSE_NETWORK" = true ]; then
+    # Get the primary network IP
+    NETWORK_IP=$(hostname -I | awk '{print $1}')
+    export VITE_API_URL="http://$NETWORK_IP:8003"
+    echo "🔗 Frontend configured to use API at: $VITE_API_URL"
+fi
+
 if [ "$EXPOSE_NETWORK" = true ]; then
     npm run dev -- --host $FRONTEND_HOST &
 else
@@ -108,6 +124,12 @@ cleanup() {
     echo "🛑 Stopping servers..."
     kill $BACKEND_PID 2>/dev/null
     kill $FRONTEND_PID 2>/dev/null
+    
+    # Deactivate virtual environment if it was activated by this script
+    if [ -n "$VIRTUAL_ENV" ] && [ "$VIRTUAL_ENV" != "${VIRTUAL_ENV_BACKUP:-}" ]; then
+        deactivate 2>/dev/null || true
+    fi
+    
     echo "✅ Servers stopped"
     exit 0
 }
