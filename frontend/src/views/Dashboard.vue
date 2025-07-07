@@ -32,20 +32,14 @@
       <!-- 1st Item: Forwarding Orders Train Departure -->
       <div class="card">
         <h2 class="card-header">Weekly Train Departures</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 py-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 py-4">
           <div class="text-center border-r border-gray-200">
-            <div class="metric-value">{{ dashboardData.forwarding_orders?.current_week_count || 0 }}</div>
+            <div class="metric-value text-brand-red">{{ dashboardData.forwarding_orders?.current_week_count || 0 }}</div>
             <div class="metric-label">This Week</div>
           </div>
-          <div class="text-center border-r border-gray-200">
+          <div class="text-center">
             <div class="metric-value text-brand-gray">{{ dashboardData.forwarding_orders?.last_week_count || 0 }}</div>
             <div class="metric-label">Last Week</div>
-          </div>
-          <div class="text-center">
-            <div class="metric-value" :class="weekOverWeekChange >= 0 ? 'text-green-600' : 'text-red-600'">
-              {{ weekOverWeekChange > 0 ? '+' : '' }}{{ weekOverWeekChange }}%
-            </div>
-            <div class="metric-label">Week-over-Week Change</div>
           </div>
         </div>
         
@@ -151,7 +145,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { apiService } from '../services/api'
 import StockpileBar from '../components/StockpileBar.vue'
 
@@ -166,14 +160,6 @@ export default {
     const dashboardData = ref({})
     const autoRefresh = ref(false)
     let refreshInterval = null
-
-    const weekOverWeekChange = computed(() => {
-      const current = dashboardData.value.forwarding_orders?.current_week_count || 0
-      const last = dashboardData.value.forwarding_orders?.last_week_count || 0
-      
-      if (last === 0) return current > 0 ? 100 : 0
-      return Math.round(((current - last) / last) * 100)
-    })
 
     const formatDate = (dateString) => {
       const date = new Date(dateString)
@@ -225,7 +211,6 @@ export default {
       error,
       dashboardData,
       autoRefresh,
-      weekOverWeekChange,
       formatDate,
       formatWeight,
       loadDashboardData,
