@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Alternative start script for systems without uv
+# Uses standard Python virtual environment instead
+
 # Parse command line arguments
 EXPOSE_NETWORK=false
 BACKEND_HOST="127.0.0.1"
@@ -21,6 +24,9 @@ while [[ $# -gt 0 ]]; do
             echo "  -h, --help            Show this help message"
             echo ""
             echo "Default: Services run on localhost only"
+            echo ""
+            echo "Note: This script uses standard Python virtual environment"
+            echo "      instead of uv for compatibility"
             exit 0
             ;;
         *)
@@ -31,21 +37,32 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Check if virtual environment exists
+if [ ! -d "venv" ]; then
+    echo "⚠️  Python virtual environment not found. Creating one..."
+    python3 -m venv venv
+    echo "📦 Installing Python dependencies..."
+    source venv/bin/activate
+    pip install -r requirements.txt
+else
+    source venv/bin/activate
+fi
+
 # Start backend server
 if [ "$EXPOSE_NETWORK" = true ]; then
     echo "🔧 Starting FastAPI backend server (network exposed)..."
     echo "🌐 Backend will be accessible from: http://$BACKEND_HOST:8003"
+    export NETWORK_MODE=true
 else
     echo "🔧 Starting FastAPI backend server (localhost only)..."
+    export NETWORK_MODE=false
 fi
 
 cd backend
 if [ "$EXPOSE_NETWORK" = true ]; then
-    export NETWORK_MODE=true
-    uv run uvicorn main:app --host $BACKEND_HOST --port 8003 &
+    python -m uvicorn main:app --host $BACKEND_HOST --port 8003 &
 else
-    export NETWORK_MODE=false
-    uv run python main.py &
+    python main.py &
 fi
 BACKEND_PID=$!
 
@@ -88,6 +105,7 @@ cleanup() {
     echo "🛑 Stopping servers..."
     kill $BACKEND_PID 2>/dev/null
     kill $FRONTEND_PID 2>/dev/null
+    deactivate 2>/dev/null
     echo "✅ Servers stopped"
     exit 0
 }

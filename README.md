@@ -63,6 +63,11 @@ A real-time dashboard for monitoring terminal operations with data from Odoo v17
    ./start.sh
    ```
 
+   **For network access (expose to other devices):**
+   ```bash
+   ./start.sh --network
+   ```
+
 ### Manual Setup
 
 #### Backend Setup
@@ -89,6 +94,28 @@ npm install
 # Start development server
 npm run dev
 ```
+
+## Running the Application
+
+### Local Development (Default)
+```bash
+./start.sh
+```
+- Frontend: http://localhost:3003
+- Backend: http://localhost:8003
+
+### Network Exposed (Accessible from other devices)
+```bash
+./start.sh --network
+```
+- Frontend: http://0.0.0.0:3003 (accessible from network)
+- Backend: http://0.0.0.0:8003 (accessible from network)
+
+**Note:** When using `--network` flag, ensure your firewall settings allow access to ports 3003 and 8003.
+
+### Command Line Options
+- `--network` or `--expose`: Expose services to network (0.0.0.0)
+- `-h` or `--help`: Show help message
 
 ## API Endpoints
 

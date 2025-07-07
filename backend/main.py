@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Dict, Any
 import logging
+import os
 from datetime import datetime
 
 from odoo_api import OdooAPI
@@ -14,10 +15,23 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Terminal Dashboard API", version="1.0.0")
 
-# Configure CORS
+# Configure CORS - Allow both localhost and network access
+allowed_origins = [
+    "http://localhost:3003",
+    "http://localhost:5173",
+    "http://127.0.0.1:3003",
+    "http://127.0.0.1:5173",
+]
+
+# Add network origins if running in network mode
+network_mode = os.getenv("NETWORK_MODE", "false").lower() == "true"
+if network_mode:
+    # Allow all origins when in network mode
+    allowed_origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3003", "http://localhost:5173"],  # Vue dev server
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
