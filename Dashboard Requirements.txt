@@ -1,0 +1,25 @@
+﻿Major Models
+Forwarding Order - x_fwo
+First Mile Truck Order - x_first_mile_freight
+Last Mile Truck Order - x_last_mile_freight
+Stockpile (Inventory) - x_stockpile
+Bulk Materials - x_material
+Stock Adjsutment (Transaction) - x_stock_adj
+Customer - x_shipper
+Transporter (Carrier) - x_transporter
+ 
+Dashboard
+1st Item:
+Graphically show how many forwarding orders (model: x_fwo) are in the status “NDP Train Departed” or “Train Arrived at Destination” (field: x_studio_selection_field_83c_1ig067df9) having their actual train departure this week and last week (and show also per day). The datetime of the actual departure can be found in the field x_studio_actual_train_departure. The week starts from every Monday 00:00.
+ 
+2nd Item:
+Graphically show how many first mile truck orders (model: x_first_mile_freight) in the terminal “NDP” (char field: x_studio_terminal) are in the status “Gate-out Completed” or “Train Departed” or “Exception” (field: x_studio_selection_field_1d4_1icdknqu2) having their actual truck gate-out today and how many net weights have they delivered. The datetime of the actual truck gate-out time can be found in the field x_studio_actual_date_and_time_of_gate_out and the net weight can be found in the field x_studio_net_weight_ton.
+ 
+3rd Item:
+Graphically show how many last mile truck orders (model: x_last_mile_freight) in the terminal “ICAD” (char field: x_studio_terminal) are in the status “Gate-out Completed” or “Order Completed and Closed” (field: x_studio_selection_field_Vik7G) having their actual truck gate-out today and how many net weights have they delivered. The datetime of the actual truck gate-out time can be found in the field x_studio_actual_date_and_time_of_gate_out and the net weight can be found in the field x_studio_net_weight_ton.
+ 
+4th Item:
+Graphically show how many last mile truck orders (model: x_last_mile_freight) in the terminal “DIC” (char field: x_studio_terminal) are in the status “Gate-out Completed” or “Order Completed and Closed” (field: x_studio_selection_field_Vik7G) having their actual truck gate-out today and how many net weights have they delivered. The datetime of the actual truck gate-out time can be found in the field x_studio_actual_date_and_time_of_gate_out and the net weight can be found in the field x_studio_net_weight_ton.
+ 
+5th Item:
+Graphically show the utilisation of the inventory storage locations (i.e. stockpiles) in each terminal. You may consider having each stockpile as a bar cylinder as the capacity and the quantity on hand as the solid bar inside. There can be 8-16 stockpiles in terminal ICAD and 4-8 stockpiles in terminal DIC. In model x_stockpile the field x_name indicates the Stockpile Name and x_studio_terminal indicates the Terminal the Stockpile is in. The capacity of each stockpile is in the float field x_studio_capacity. The quantity on hand is in the field x_studio_quantity_in_stock_t. Under each bar you can show the material name (field: x_studio_material.x_name) and the stockpile material age in hours (float field: x_studio_stockpile_material_age).

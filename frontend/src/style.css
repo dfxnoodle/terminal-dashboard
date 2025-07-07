@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-brand-light-gray text-brand-dark font-sans;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-lg shadow-lg p-6 border border-gray-200 transition-shadow duration-300 hover:shadow-xl;
+  }
+  
+  .card-header {
+    @apply text-xl font-bold text-brand-dark mb-4 border-b-2 border-brand-red pb-2;
+  }
+  
+  .metric-value {
+    @apply text-4xl font-bold text-brand-red;
+  }
+  
+  .metric-label {
+    @apply text-sm text-brand-gray uppercase tracking-wider;
+  }
+}
