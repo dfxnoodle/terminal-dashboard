@@ -54,7 +54,8 @@
                 class="text-center p-3 bg-white rounded-lg shadow-sm"
               >
                 <div class="text-sm font-bold text-brand-red">{{ count }}</div>
-                <div class="text-xs text-gray-500 mt-1">{{ formatDate(date) }}</div>
+                <div class="text-xs text-gray-500 mt-1">{{ formatFullDate(date) }}</div>
+                <div class="text-xs text-gray-400">{{ formatDate(date) }}</div>
               </div>
             </div>
           </div>
@@ -166,6 +167,15 @@ export default {
       return date.toLocaleDateString('en-US', { weekday: 'short' })
     }
 
+    const formatFullDate = (dateString) => {
+      const date = new Date(dateString)
+      return date.toLocaleDateString('en-GB', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric' 
+      })
+    }
+
     const formatWeight = (weight) => {
       return (weight).toFixed(2)
     }
@@ -212,6 +222,7 @@ export default {
       dashboardData,
       autoRefresh,
       formatDate,
+      formatFullDate,
       formatWeight,
       loadDashboardData,
       toggleAutoRefresh
