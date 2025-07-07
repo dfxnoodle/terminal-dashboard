@@ -21,6 +21,7 @@ allowed_origins = [
     "http://localhost:5173",
     "http://127.0.0.1:3003",
     "http://127.0.0.1:5173",
+    "http://170.64.226.2:3003",
 ]
 
 # Add network origins if running in network mode
