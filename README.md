@@ -1,6 +1,6 @@
 # Terminal Dashboard
 
-[![CI/CD Pipeline](https://github.com/your-username/terminal-dashboard/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/your-username/terminal-dashboard/actions)
+[![CI/CD Pipeline](https://github.com/dfxnoodle/terminal-dashboard/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/dfxnoodle/terminal-dashboard/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Vue 3](https://img.shields.io/badge/vue-3.x-green.svg)](https://vuejs.org/)
@@ -40,7 +40,7 @@ A real-time dashboard for monitoring terminal operations with data from Odoo v17
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/terminal-dashboard.git
+   git clone https://github.com/dfxnoodle/terminal-dashboard.git
    cd terminal-dashboard
    ```
 
