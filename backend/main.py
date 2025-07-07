@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -14,6 +14,32 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Terminal Dashboard API", version="1.0.0")
+
+# Manual CORS handling for debugging
+@app.middleware("http")
+async def cors_handler(request: Request, call_next):
+    response = await call_next(request)
+    origin = request.headers.get("origin")
+    
+    # Always add CORS headers for debugging
+    response.headers["Access-Control-Allow-Origin"] = origin or "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    
+    return response
+
+# Handle preflight requests
+@app.options("/{path:path}")
+async def handle_options(path: str):
+    return JSONResponse(
+        content={"message": "OK"},
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
 
 # Configure CORS - Allow both localhost and network access
 allowed_origins = [
@@ -32,6 +58,11 @@ if network_mode:
     # Allow all origins when in network mode
     allowed_origins = ["*"]
     allow_credentials = False  # Can't use credentials with wildcard origins
+
+print(f"🔧 CORS Configuration:")
+print(f"   Network Mode: {network_mode}")
+print(f"   Allowed Origins: {allowed_origins}")
+print(f"   Allow Credentials: {allow_credentials}")
 
 app.add_middleware(
     CORSMiddleware,
