@@ -31,15 +31,19 @@
     <div v-else class="space-y-10">
       <!-- 1st Item: Forwarding Orders Train Departure -->
       <div class="card">
-        <h2 class="card-header">Weekly Train Departures</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 py-4">
+        <h2 class="card-header">Train Departures</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 py-4">
+          <div class="text-center border-r border-gray-200">
+            <div class="metric-value text-brand-gray">{{ dashboardData.forwarding_orders?.last_week_count || 0 }}</div>
+            <div class="metric-label">Last Week</div>
+          </div>          
           <div class="text-center border-r border-gray-200">
             <div class="metric-value text-brand-red">{{ dashboardData.forwarding_orders?.current_week_count || 0 }}</div>
             <div class="metric-label">This Week</div>
           </div>
           <div class="text-center">
-            <div class="metric-value text-brand-gray">{{ dashboardData.forwarding_orders?.last_week_count || 0 }}</div>
-            <div class="metric-label">Last Week</div>
+            <div class="metric-value text-green-600">{{ getTodayCount() }}</div>
+            <div class="metric-label">Today</div>
           </div>
         </div>
         
@@ -54,9 +58,8 @@
                 class="text-center p-3 bg-white rounded-lg shadow-sm"
               >
                 <div class="text-sm font-bold text-brand-red">{{ count }}</div>
-                <div class="text-xs text-gray-500 mt-1">
-                  {{ formatFullDate(date) }} ({{ formatDate(date) }})
-                </div>
+                <div class="text-xs text-gray-500 mt-1">{{ formatFullDate(date) }}</div>
+                <div class="text-xs text-gray-400">{{ formatDate(date) }}</div>
               </div>
             </div>
           </div>
@@ -181,6 +184,12 @@ export default {
       return (weight).toFixed(2)
     }
 
+    const getTodayCount = () => {
+      const today = new Date().toISOString().split('T')[0] // Get today's date in YYYY-MM-DD format
+      const dailyCounts = dashboardData.value.forwarding_orders?.daily_counts || {}
+      return dailyCounts[today] || 0
+    }
+
     const loadDashboardData = async () => {
       loading.value = true
       error.value = null
@@ -225,6 +234,7 @@ export default {
       formatDate,
       formatFullDate,
       formatWeight,
+      getTodayCount,
       loadDashboardData,
       toggleAutoRefresh
     }
