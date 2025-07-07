@@ -182,21 +182,22 @@ class OdooAPI:
     def get_stockpile_utilization(self):
         """5th Item: Stockpile utilization for ICAD and DIC terminals"""
         try:
-            # Simple approach - just get all fields first
+            # Fetch stockpile records
             stockpiles = self.execute_kw(
                 'x_stockpile', 'search_read',
                 [[]],  # Empty domain to get all records
-                {
-                    'fields': [],  # Empty fields list gets all fields
-                    'limit': 50
-                }
+                {'limit': 50}
             )
             
-            if stockpiles:
-                # Log the first record to see what fields are available
-                logger.info(f"Available stockpile fields: {list(stockpiles[0].keys())}")
+            if not stockpiles:
+                logger.warning("No stockpile records found")
+                raise Exception("No stockpile records exist")
+            
+            logger.info(f"Fetched {len(stockpiles)} stockpile records")
+                
         except Exception as e:
             logger.error(f"Error fetching stockpiles: {e}")
+            logger.info("Returning mock data due to stockpile fetch failure")
             # Return mock data for demonstration purposes
             return {
                 'ICAD': [
@@ -257,10 +258,11 @@ class OdooAPI:
                    f"Stockpile {stockpile.get('id', '')}")
             
             # Try different capacity field names
-            capacity = (stockpile.get('x_studio_capacity') or 
+            capacity = (stockpile.get('x_studio_capacity_1') or 
+                       stockpile.get('x_studio_capacity') or 
                        stockpile.get('x_capacity') or 
                        stockpile.get('capacity') or 
-                       1000.0)
+                       5000.0)
             
             # Try different quantity field names
             quantity = (stockpile.get('x_studio_quantity_in_stock_t') or 
