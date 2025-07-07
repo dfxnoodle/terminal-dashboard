@@ -181,7 +181,7 @@ export default {
     }
 
     const formatWeight = (weight) => {
-      return (weight / 1000).toFixed(2)
+      return (weight).toFixed(2)
     }
 
     const loadDashboardData = async () => {
