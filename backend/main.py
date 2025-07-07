@@ -25,15 +25,18 @@ allowed_origins = [
 
 # Add network origins if running in network mode
 network_mode = os.getenv("NETWORK_MODE", "false").lower() == "true"
+allow_credentials = True
+
 if network_mode:
     # Allow all origins when in network mode
     allowed_origins = ["*"]
+    allow_credentials = False  # Can't use credentials with wildcard origins
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_credentials=allow_credentials,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -159,6 +162,15 @@ async def get_all_dashboard_data():
     except Exception as e:
         logger.error(f"Error fetching all dashboard data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/cors-test")
+async def cors_test():
+    """Simple endpoint to test CORS configuration"""
+    return {
+        "message": "CORS test successful",
+        "timestamp": datetime.now().isoformat(),
+        "network_mode": os.getenv("NETWORK_MODE", "false")
+    }
 
 if __name__ == "__main__":
     import uvicorn

@@ -40,12 +40,29 @@ else
 fi
 
 cd backend
-if [ "$EXPOSE_NETWORK" = true ]; then
-    export NETWORK_MODE=true
-    uv run uvicorn main:app --host $BACKEND_HOST --port 8003 &
+
+# Check if uv is available
+if command -v uv &> /dev/null; then
+    echo "📦 Using uv for dependency management"
+    if [ "$EXPOSE_NETWORK" = true ]; then
+        export NETWORK_MODE=true
+        uv run uvicorn main:app --host $BACKEND_HOST --port 8003 &
+    else
+        export NETWORK_MODE=false
+        uv run python main.py &
+    fi
 else
-    export NETWORK_MODE=false
-    uv run python main.py &
+    echo "⚠️  uv not found, using standard Python"
+    echo "💡 Consider using ./start-venv.sh for systems without uv"
+    
+    # Try to use uvicorn directly
+    if [ "$EXPOSE_NETWORK" = true ]; then
+        export NETWORK_MODE=true
+        python3 -m uvicorn main:app --host $BACKEND_HOST --port 8003 &
+    else
+        export NETWORK_MODE=false
+        python3 main.py &
+    fi
 fi
 BACKEND_PID=$!
 
