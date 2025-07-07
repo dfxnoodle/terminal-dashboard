@@ -202,44 +202,44 @@ class OdooAPI:
             return {
                 'ICAD': [
                     {
-                        'name': 'ICAD-SP-01',
+                        'name': 'ICAD-SP-01 (Demo)',
                         'capacity': 1000.0,
                         'quantity': 750.0,
-                        'material_name': 'Iron Ore',
+                        'material_name': 'Iron Ore (Demo)',
                         'material_age_hours': 24.5,
                         'utilization_percent': 75.0
                     },
                     {
-                        'name': 'ICAD-SP-02',
+                        'name': 'ICAD-SP-02 (Demo)',
                         'capacity': 1200.0,
                         'quantity': 960.0,
-                        'material_name': 'Coal',
+                        'material_name': 'Coal (Demo)',
                         'material_age_hours': 48.2,
                         'utilization_percent': 80.0
                     },
                     {
-                        'name': 'ICAD-SP-03',
+                        'name': 'ICAD-SP-03 (Demo)',
                         'capacity': 800.0,
                         'quantity': 320.0,
-                        'material_name': 'Limestone',
+                        'material_name': 'Limestone (Demo)',
                         'material_age_hours': 12.8,
                         'utilization_percent': 40.0
                     }
                 ],
                 'DIC': [
                     {
-                        'name': 'DIC-SP-01',
+                        'name': 'DIC-SP-01 (Demo)',
                         'capacity': 1500.0,
                         'quantity': 1350.0,
-                        'material_name': 'Iron Ore',
+                        'material_name': 'Iron Ore (Demo)',
                         'material_age_hours': 36.1,
                         'utilization_percent': 90.0
                     },
                     {
-                        'name': 'DIC-SP-02',
+                        'name': 'DIC-SP-02 (Demo)',
                         'capacity': 1000.0,
                         'quantity': 600.0,
-                        'material_name': 'Coal',
+                        'material_name': 'Coal (Demo)',
                         'material_age_hours': 72.5,
                         'utilization_percent': 60.0
                     }
@@ -251,44 +251,16 @@ class OdooAPI:
         dic_stockpiles = []
         
         for stockpile in stockpiles:
-            # Use whatever fields are available - be flexible
-            name = (stockpile.get('x_name') or 
-                   stockpile.get('name') or 
-                   stockpile.get('display_name') or 
-                   f"Stockpile {stockpile.get('id', '')}")
+            # Use the actual field names from Odoo
+            name = stockpile.get('x_name') or stockpile.get('display_name') or f"Stockpile {stockpile.get('id', '')}"
+            capacity = stockpile.get('x_studio_capacity_1', 5000.0)
+            quantity = stockpile.get('x_studio_quantity_in_stock_t', 0.0)
+            terminal = stockpile.get('x_studio_terminal', '')
+            age = stockpile.get('x_studio_stockpile_material_age', 0.0)
             
-            # Try different capacity field names
-            capacity = (stockpile.get('x_studio_capacity_1') or 
-                       stockpile.get('x_studio_capacity') or 
-                       stockpile.get('x_capacity') or 
-                       stockpile.get('capacity') or 
-                       5000.0)
-            
-            # Try different quantity field names
-            quantity = (stockpile.get('x_studio_quantity_in_stock_t') or 
-                       stockpile.get('x_quantity') or 
-                       stockpile.get('quantity') or 
-                       stockpile.get('x_current_stock') or 
-                       0.0)
-            
-            # Try different terminal field names
-            terminal = (stockpile.get('x_studio_terminal') or 
-                       stockpile.get('x_terminal') or 
-                       stockpile.get('terminal') or 
-                       '')
-            
-            # Try different age field names
-            age = (stockpile.get('x_studio_stockpile_material_age') or 
-                  stockpile.get('x_age') or 
-                  stockpile.get('age') or 
-                  stockpile.get('material_age') or 
-                  0.0)
-            
-            # Get material name if field exists
+            # Get material name from the material field
             material_name = ''
-            material_field = (stockpile.get('x_studio_material') or 
-                            stockpile.get('x_material') or 
-                            stockpile.get('material'))
+            material_field = stockpile.get('x_studio_material')
             
             if material_field:
                 if isinstance(material_field, list) and len(material_field) > 1:
