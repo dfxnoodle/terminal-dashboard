@@ -54,8 +54,9 @@
                 class="text-center p-3 bg-white rounded-lg shadow-sm"
               >
                 <div class="text-sm font-bold text-brand-red">{{ count }}</div>
-                <div class="text-xs text-gray-500 mt-1">{{ formatFullDate(date) }}</div>
-                <div class="text-xs text-gray-400">{{ formatDate(date) }}</div>
+                <div class="text-xs text-gray-500 mt-1">
+                  {{ formatFullDate(date) }} ({{ formatDate(date) }})
+                </div>
               </div>
             </div>
           </div>
