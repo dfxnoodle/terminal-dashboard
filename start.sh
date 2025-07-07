@@ -41,28 +41,31 @@ fi
 
 cd backend
 
-# Check if uv is available
-if command -v uv &> /dev/null; then
+# Activate virtual environment if it exists
+if [ -d "../.venv" ]; then
+    echo "📦 Using Python virtual environment"
+    source ../.venv/bin/activate
+    PYTHON_CMD="python"
+elif command -v uv &> /dev/null; then
     echo "📦 Using uv for dependency management"
-    if [ "$EXPOSE_NETWORK" = true ]; then
-        export NETWORK_MODE=true
-        uv run uvicorn main:app --host $BACKEND_HOST --port 8003 &
+    PYTHON_CMD="uv run python"
+else
+    echo "⚠️  Using system Python"
+    PYTHON_CMD="python3"
+fi
+
+if [ "$EXPOSE_NETWORK" = true ]; then
+    export NETWORK_MODE=true
+    if [ -d "../.venv" ] || command -v uvicorn &> /dev/null; then
+        $PYTHON_CMD -m uvicorn main:app --host $BACKEND_HOST --port 8003 &
     else
-        export NETWORK_MODE=false
-        uv run python main.py &
+        echo "❌ uvicorn not available. Please install dependencies first."
+        echo "   Run: pip3 install -r requirements.txt"
+        exit 1
     fi
 else
-    echo "⚠️  uv not found, using standard Python"
-    echo "💡 Consider using ./start-venv.sh for systems without uv"
-    
-    # Try to use uvicorn directly
-    if [ "$EXPOSE_NETWORK" = true ]; then
-        export NETWORK_MODE=true
-        python3 -m uvicorn main:app --host $BACKEND_HOST --port 8003 &
-    else
-        export NETWORK_MODE=false
-        python3 main.py &
-    fi
+    export NETWORK_MODE=false
+    $PYTHON_CMD main.py &
 fi
 BACKEND_PID=$!
 
