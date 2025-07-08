@@ -15,6 +15,16 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Terminal Dashboard API", version="1.0.0")
 
+# Authentication models
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+class LoginResponse(BaseModel):
+    success: bool
+    message: str
+    token: str = None
+
 # Manual CORS handling for debugging
 @app.middleware("http")
 async def cors_handler(request: Request, call_next):
@@ -100,20 +110,49 @@ async def health_check():
     """Health check endpoint"""
     try:
         # Test Odoo connection
-        if not odoo_api.uid:
-            odoo_api.authenticate()
-        
+        odoo_connected = odoo_api.test_connection()
         return {
             "status": "healthy",
-            "odoo_connected": bool(odoo_api.uid),
+            "odoo_connected": odoo_connected,
             "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
-        return {
-            "status": "unhealthy",
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        }
+        logger.error(f"Health check failed: {e}")
+        raise HTTPException(status_code=500, detail="Service unhealthy")
+
+@app.post("/api/auth/login", response_model=LoginResponse)
+async def login(request: LoginRequest):
+    """Authenticate user with admin credentials"""
+    try:
+        # Get admin credentials from environment
+        admin_username = os.getenv("ADMIN_USERNAME")
+        admin_password = os.getenv("ADMIN_PASSWORD")
+        
+        if not admin_username or not admin_password:
+            logger.error("Admin credentials not configured in environment")
+            raise HTTPException(status_code=500, detail="Authentication not configured")
+        
+        # Check credentials
+        if request.username == admin_username and request.password == admin_password:
+            # Generate a simple token (in production, use JWT or similar)
+            token = f"auth_token_{datetime.now().timestamp()}"
+            
+            logger.info(f"Successful login for user: {request.username}")
+            return LoginResponse(
+                success=True,
+                message="Login successful",
+                token=token
+            )
+        else:
+            logger.warning(f"Failed login attempt for user: {request.username}")
+            return LoginResponse(
+                success=False,
+                message="Invalid credentials"
+            )
+    
+    except Exception as e:
+        logger.error(f"Login error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.get("/api/dashboard/forwarding-orders", response_model=DashboardResponse)
 async def get_forwarding_orders_data():

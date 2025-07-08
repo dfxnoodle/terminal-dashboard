@@ -145,13 +145,21 @@
       >
         Auto-Refresh: {{ autoRefresh ? 'ON' : 'OFF' }}
       </button>
+      <button 
+        @click="handleLogout" 
+        class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-full font-medium shadow-md transition-colors duration-300"
+      >
+        Logout
+      </button>
     </div>
   </div>
 </template>
 
 <script>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { apiService } from '../services/api'
+import { authService } from '../services/auth'
 import StockpileBar from '../components/StockpileBar.vue'
 
 export default {
@@ -160,6 +168,7 @@ export default {
     StockpileBar
   },
   setup() {
+    const router = useRouter()
     const loading = ref(false)
     const error = ref(null)
     const dashboardData = ref({})
@@ -223,6 +232,11 @@ export default {
       }
     }
 
+    const handleLogout = () => {
+      authService.logout()
+      router.push('/login')
+    }
+
     onMounted(() => {
       loadDashboardData()
     })
@@ -244,7 +258,8 @@ export default {
       getTodayCount,
       getFilteredStockpiles,
       loadDashboardData,
-      toggleAutoRefresh
+      toggleAutoRefresh,
+      handleLogout
     }
   }
 }

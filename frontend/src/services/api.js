@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { authService } from './auth'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8003'
 
@@ -16,6 +17,13 @@ class ApiService {
     this.api.interceptors.request.use(
       (config) => {
         console.log(`Making ${config.method?.toUpperCase()} request to ${config.url}`)
+        
+        // Add auth token to protected routes
+        const token = authService.getToken()
+        if (token && !config.url?.includes('/auth/')) {
+          config.headers.Authorization = `Bearer ${token}`
+        }
+        
         return config
       },
       (error) => {
@@ -29,6 +37,12 @@ class ApiService {
         return response.data
       },
       (error) => {
+        // Handle 401 errors by redirecting to login
+        if (error.response?.status === 401) {
+          authService.logout()
+          window.location.href = '/login'
+        }
+        
         console.error('API Error:', error.response?.data || error.message)
         throw error
       }

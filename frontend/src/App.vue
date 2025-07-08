@@ -1,7 +1,7 @@
 <template>
   <div id="app" class="min-h-screen bg-brand-light-gray relative overflow-hidden">
-    <!-- Animated Background -->
-    <div class="fixed inset-0 pointer-events-none z-0 opacity-20">
+    <!-- Animated Background - hidden on login page -->
+    <div v-if="!isLoginPage" class="fixed inset-0 pointer-events-none z-0 opacity-20">
       <!-- Railway tracks -->
       <div class="railway-track railway-track-1"></div>
       <div class="railway-track railway-track-2"></div>
@@ -22,7 +22,8 @@
       </div>
     </div>
 
-    <header class="bg-brand-dark shadow-md relative z-10">
+    <!-- Header - hidden on login page -->
+    <header v-if="!isLoginPage" class="bg-brand-dark shadow-md relative z-10">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center py-4">
           <div class="flex items-center space-x-4">
@@ -51,28 +52,36 @@
       </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
+    <!-- Main content -->
+    <main :class="isLoginPage ? '' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10'">
       <router-view />
     </main>
 
-    <footer class="bg-brand-dark mt-12 py-4 relative z-10">
+    <!-- Footer - hidden on login page -->
+    <footer v-if="!isLoginPage" class="bg-brand-dark mt-12 py-4 relative z-10">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400 text-sm">
-        &copy; {{ new Date().getFullYear() }} Linus Services Limited. All rights reserved.
+        &copy;{{ new Date().getFullYear() }} Linus Services Limited. All rights reserved.
       </div>
     </footer>
   </div>
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { apiService } from './services/api'
 
 export default {
   name: 'App',
   setup() {
+    const route = useRoute()
     const connectionStatus = ref('loading')
     const lastUpdated = ref('')
     let healthCheckInterval = null
+
+    const isLoginPage = computed(() => {
+      return route.name === 'Login'
+    })
 
     const connectionStatusText = computed(() => {
       switch (connectionStatus.value) {
@@ -94,8 +103,18 @@ export default {
       }
     }
 
+    // Watch for route changes to manage body overflow
+    const updateBodyOverflow = () => {
+      if (isLoginPage.value) {
+        document.body.style.overflow = 'hidden'
+      } else {
+        document.body.style.overflow = ''
+      }
+    }
+
     onMounted(() => {
       checkHealth()
+      updateBodyOverflow()
       // Check health every 30 seconds
       healthCheckInterval = setInterval(checkHealth, 30000)
     })
@@ -104,12 +123,18 @@ export default {
       if (healthCheckInterval) {
         clearInterval(healthCheckInterval)
       }
+      // Reset body overflow when component unmounts
+      document.body.style.overflow = ''
     })
+
+    // Use a watcher to update overflow when route changes
+    watch(isLoginPage, updateBodyOverflow)
 
     return {
       connectionStatus,
       connectionStatusText,
-      lastUpdated
+      lastUpdated,
+      isLoginPage
     }
   }
 }

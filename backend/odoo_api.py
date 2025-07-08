@@ -50,6 +50,24 @@ class OdooAPI:
                 kwargs or {}
             )
         except Exception as e:
+            logger.error(f"Error executing {method} on {model}: {e}")
+            raise
+    
+    def test_connection(self):
+        """Test connection to Odoo"""
+        try:
+            if not self.uid:
+                return self.authenticate()
+            
+            # Try a simple query to test the connection
+            result = self.execute_kw('res.users', 'search_read', 
+                                   [[['id', '=', self.uid]]], 
+                                   {'fields': ['name'], 'limit': 1})
+            return bool(result)
+        except Exception as e:
+            logger.error(f"Connection test failed: {e}")
+            return False
+        except Exception as e:
             logger.error(f"API call failed: {e}")
             raise
     
