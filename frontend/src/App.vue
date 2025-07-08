@@ -57,7 +57,7 @@
 
     <footer class="bg-brand-dark mt-12 py-4 relative z-10">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400 text-sm">
-        &copy; {{ new Date().getFullYear() }} Etihad Rail. All rights reserved.
+        &copy; {{ new Date().getFullYear() }} Linus Services Limited. All rights reserved.
       </div>
     </footer>
   </div>

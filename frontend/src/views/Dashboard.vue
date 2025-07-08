@@ -109,8 +109,8 @@
         <!-- ICAD Stockpiles -->
         <div class="mb-8">
           <h3 class="text-xl font-semibold text-brand-gray mb-4">ICAD Terminal</h3>
-          <div v-if="dashboardData.stockpiles?.ICAD?.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            <StockpileBar v-for="stockpile in dashboardData.stockpiles.ICAD" :key="stockpile.name" :stockpile="stockpile" />
+          <div v-if="getFilteredStockpiles(dashboardData.stockpiles?.ICAD).length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <StockpileBar v-for="stockpile in getFilteredStockpiles(dashboardData.stockpiles?.ICAD)" :key="stockpile.name" :stockpile="stockpile" />
           </div>
           <p v-else class="text-gray-500">No stockpile data available for ICAD terminal.</p>
         </div>
@@ -118,8 +118,8 @@
         <!-- DIC Stockpiles -->
         <div>
           <h3 class="text-xl font-semibold text-brand-gray mb-4">DIC Terminal</h3>
-          <div v-if="dashboardData.stockpiles?.DIC?.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            <StockpileBar v-for="stockpile in dashboardData.stockpiles.DIC" :key="stockpile.name" :stockpile="stockpile" />
+          <div v-if="getFilteredStockpiles(dashboardData.stockpiles?.DIC).length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <StockpileBar v-for="stockpile in getFilteredStockpiles(dashboardData.stockpiles?.DIC)" :key="stockpile.name" :stockpile="stockpile" />
           </div>
           <p v-else class="text-gray-500">No stockpile data available for DIC terminal.</p>
         </div>
@@ -190,6 +190,13 @@ export default {
       return dailyCounts[today] || 0
     }
 
+    const getFilteredStockpiles = (stockpiles) => {
+      if (!stockpiles || !Array.isArray(stockpiles)) {
+        return []
+      }
+      return stockpiles.filter(stockpile => stockpile.capacity > 0)
+    }
+
     const loadDashboardData = async () => {
       loading.value = true
       error.value = null
@@ -235,6 +242,7 @@ export default {
       formatFullDate,
       formatWeight,
       getTodayCount,
+      getFilteredStockpiles,
       loadDashboardData,
       toggleAutoRefresh
     }
