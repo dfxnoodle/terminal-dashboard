@@ -6,6 +6,7 @@ from typing import Dict, Any
 import logging
 import os
 from datetime import datetime
+from contextlib import asynccontextmanager
 
 from odoo_api import OdooAPI
 
@@ -13,7 +14,26 @@ from odoo_api import OdooAPI
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Terminal Dashboard API", version="1.0.0")
+# Initialize Odoo API globally
+odoo_api = OdooAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    try:
+        if odoo_api.authenticate():
+            logger.info("Successfully connected to Odoo")
+        else:
+            logger.error("Failed to connect to Odoo")
+    except Exception as e:
+        logger.error(f"Startup error: {e}")
+    
+    yield
+    
+    # Shutdown (if needed)
+    logger.info("Application shutdown")
+
+app = FastAPI(title="Terminal Dashboard API", version="1.0.0", lifespan=lifespan)
 
 # Authentication models
 class LoginRequest(BaseModel):
@@ -82,24 +102,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize Odoo API
-odoo_api = OdooAPI()
+# Initialize Odoo API (moved to top of file)
+# odoo_api = OdooAPI()  # Already initialized globally above
 
 class DashboardResponse(BaseModel):
     success: bool
     data: Dict[str, Any]
     timestamp: str
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize Odoo connection on startup"""
-    try:
-        if odoo_api.authenticate():
-            logger.info("Successfully connected to Odoo")
-        else:
-            logger.error("Failed to connect to Odoo")
-    except Exception as e:
-        logger.error(f"Startup error: {e}")
 
 @app.get("/")
 async def root():
