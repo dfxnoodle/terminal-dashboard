@@ -53,13 +53,13 @@
           <div class="bg-brand-light-gray p-4 rounded-lg">
             <div class="grid grid-cols-7 gap-3">
               <div 
-                v-for="(count, date) in dashboardData.forwarding_orders.daily_counts" 
-                :key="date"
+                v-for="(dayData, index) in getLast7Days()" 
+                :key="index"
                 class="text-center p-3 bg-white rounded-lg shadow-sm"
               >
-                <div class="text-sm font-bold text-brand-red">{{ count }}</div>
-                <div class="text-xs text-gray-500 mt-1">{{ formatFullDate(date) }}</div>
-                <div class="text-xs text-gray-400">{{ formatDate(date) }}</div>
+                <div class="text-sm font-bold text-brand-red">{{ dayData.count }}</div>
+                <div class="text-xs text-gray-500 mt-1">{{ dayData.fullDate }}</div>
+                <div class="text-xs text-gray-400">{{ dayData.weekday }}</div>
               </div>
             </div>
           </div>
@@ -206,6 +206,34 @@ export default {
       return stockpiles.filter(stockpile => stockpile.capacity > 0)
     }
 
+    const getLast7Days = () => {
+      const today = new Date()
+      const last7Days = []
+      const dailyCounts = dashboardData.value.forwarding_orders?.daily_counts || {}
+      
+      // Generate the last 7 days (including today)
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(today)
+        date.setDate(today.getDate() - i)
+        
+        const dateString = date.toISOString().split('T')[0] // YYYY-MM-DD format
+        const count = dailyCounts[dateString] || 0
+        
+        last7Days.push({
+          date: dateString,
+          count: count,
+          fullDate: date.toLocaleDateString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric' 
+          }),
+          weekday: date.toLocaleDateString('en-US', { weekday: 'short' })
+        })
+      }
+      
+      return last7Days
+    }
+
     const loadDashboardData = async () => {
       loading.value = true
       error.value = null
@@ -257,6 +285,7 @@ export default {
       formatWeight,
       getTodayCount,
       getFilteredStockpiles,
+      getLast7Days,
       loadDashboardData,
       toggleAutoRefresh,
       handleLogout
