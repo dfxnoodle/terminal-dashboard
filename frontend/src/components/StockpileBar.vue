@@ -119,9 +119,11 @@ export default {
     }
 
     const formatNumber = (num) => {
-      return Number(num).toLocaleString('en-US', { 
+      // Round to whole number and show zero for negative values
+      const roundedNum = Math.max(0, Math.round(Number(num)))
+      return roundedNum.toLocaleString('en-US', { 
         minimumFractionDigits: 0, 
-        maximumFractionDigits: 1 
+        maximumFractionDigits: 0 
       })
     }
 

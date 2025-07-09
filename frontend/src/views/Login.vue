@@ -36,8 +36,8 @@
         <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white border-opacity-20">
           <!-- Logo and Header -->
           <div class="text-center mb-8">
-            <img src="/etihad_rail_logo.svg" alt="Etihad Rail" class="mx-auto h-20 w-auto mb-6 filter brightness-0 invert">
-            <h2 class="text-4xl font-bold text-white mb-2">Terminal Dashboard</h2>
+            <img src="/etihad_rail_logo.png" alt="Etihad Rail" class="mx-auto h-20 w-auto mb-6 filter brightness-0 invert">
+            <h2 class="text-4xl font-bold text-white mb-2">Aggregates Operations Dashboard</h2>
             <p class="text-white text-opacity-80 text-lg">Sign in to access the dashboard</p>
           </div>
 

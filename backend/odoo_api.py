@@ -2,7 +2,7 @@ import os
 import xmlrpc.client
 from dotenv import load_dotenv
 from typing import List, Dict, Any, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 
 # Load environment variables from parent directory
@@ -23,6 +23,9 @@ class OdooAPI:
         self.common = xmlrpc.client.ServerProxy(f'{self.url}/xmlrpc/2/common')
         self.models = xmlrpc.client.ServerProxy(f'{self.url}/xmlrpc/2/object')
         self.uid = None
+        
+        # UAE timezone (UTC+4)
+        self.uae_tz = timezone(timedelta(hours=4))
         
     def authenticate(self):
         """Authenticate with Odoo and get user ID"""
@@ -72,26 +75,32 @@ class OdooAPI:
             raise
     
     def get_week_start_dates(self):
-        """Get start dates for current week and last week (Monday 00:00)"""
-        today = datetime.now().date()
+        """Get start dates for current week and last week (Monday 00:00) in UAE timezone"""
+        # Get current time in UAE timezone
+        now_uae = datetime.now(self.uae_tz)
+        today = now_uae.date()
         days_since_monday = today.weekday()
         
-        # Current week start (Monday 00:00)
+        # Current week start (Monday 00:00) in UAE timezone
         current_week_start = datetime.combine(
             today - timedelta(days=days_since_monday),
             datetime.min.time()
-        )
+        ).replace(tzinfo=self.uae_tz)
         
-        # Last week start (Monday 00:00)
+        # Last week start (Monday 00:00) in UAE timezone
         last_week_start = current_week_start - timedelta(weeks=1)
         
         return last_week_start, current_week_start
     
     def get_today_range(self):
-        """Get start and end of today"""
-        today = datetime.now().date()
-        start_of_day = datetime.combine(today, datetime.min.time())
-        end_of_day = datetime.combine(today, datetime.max.time())
+        """Get start and end of today in UAE timezone"""
+        # Get current time in UAE timezone
+        now_uae = datetime.now(self.uae_tz)
+        today = now_uae.date()
+        
+        start_of_day = datetime.combine(today, datetime.min.time()).replace(tzinfo=self.uae_tz)
+        end_of_day = datetime.combine(today, datetime.max.time()).replace(tzinfo=self.uae_tz)
+        
         return start_of_day, end_of_day
     
     def get_forwarding_orders_train_data(self):
@@ -124,7 +133,9 @@ class OdooAPI:
         for order in orders:
             departure_str = order['x_studio_actual_train_departure']
             if departure_str:
+                # Parse datetime and assume it's in UAE timezone
                 departure_dt = datetime.strptime(departure_str, '%Y-%m-%d %H:%M:%S')
+                departure_dt = departure_dt.replace(tzinfo=self.uae_tz)
                 
                 # Determine week
                 if departure_dt >= current_week_start:
@@ -204,7 +215,15 @@ class OdooAPI:
             stockpiles = self.execute_kw(
                 'x_stockpile', 'search_read',
                 [[]],  # Empty domain to get all records
-                {'limit': 50}
+                {
+                    'limit': 50,
+                    'fields': [
+                        'id', 'x_name', 'display_name', 'x_studio_capacity',
+                        'x_studio_quantity_in_stock_t', 'x_studio_terminal',
+                        'x_studio_stockpile_material_age', 'x_studio_material',
+                        'x_studio_show_in_dashboard'
+                    ]
+                }
             )
             
             if not stockpiles:
@@ -269,9 +288,16 @@ class OdooAPI:
         dic_stockpiles = []
         
         for stockpile in stockpiles:
+            # Check if stockpile should be shown in dashboard
+            show_in_dashboard = stockpile.get('x_studio_show_in_dashboard', False)
+            
+            # Skip stockpiles that shouldn't be shown in dashboard
+            if not show_in_dashboard:
+                continue
+            
             # Use the actual field names from Odoo
             name = stockpile.get('x_name') or stockpile.get('display_name') or f"Stockpile {stockpile.get('id', '')}"
-            capacity = stockpile.get('x_studio_capacity_1', 5000.0)
+            capacity = stockpile.get('x_studio_capacity', 5000.0)
             quantity = stockpile.get('x_studio_quantity_in_stock_t', 0.0)
             terminal = stockpile.get('x_studio_terminal', '')
             age = stockpile.get('x_studio_stockpile_material_age', 0.0)
