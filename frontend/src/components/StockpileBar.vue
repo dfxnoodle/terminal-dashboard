@@ -46,7 +46,7 @@
     
     <!-- Capacity and Quantity Info -->
     <div class="text-sm text-brand-gray mb-2">
-      <span class="font-semibold">{{ formatNumber(stockpile.quantity) }}</span> / {{ formatNumber(stockpile.capacity) }} t
+      <span class="font-semibold">{{ formattedQuantity }}</span> / {{ formatNumber(stockpile.capacity) }} t
     </div>
     
     <!-- Material Name -->
@@ -62,6 +62,8 @@
 </template>
 
 <script>
+import { computed } from 'vue'
+
 export default {
   name: 'StockpileBar',
   props: {
@@ -76,9 +78,22 @@ export default {
         material_age_hours: 0,
         utilization_percent: 0
       })
+    },
+    rounding: {
+      type: Number,
+      default: 0
     }
   },
-  setup() {
+  setup(props) {
+    const formattedQuantity = computed(() => {
+      if (props.rounding === 0) {
+        return formatNumber(props.stockpile.quantity)
+      } else {
+        const rounded = Math.round(props.stockpile.quantity / props.rounding) * props.rounding
+        return formatNumber(rounded)
+      }
+    })
+
     const getUtilizationColor = (percentage) => {
       if (percentage >= 90) return '#A7002C' // brand-red
       if (percentage >= 75) return '#F59E0B' // amber-500
@@ -145,7 +160,8 @@ export default {
       getParticleCount,
       getRandomPosition,
       formatNumber,
-      formatAge
+      formatAge,
+      formattedQuantity
     }
   }
 }

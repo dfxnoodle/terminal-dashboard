@@ -74,7 +74,7 @@ class OdooAPI:
             logger.error(f"API call failed: {e}")
             raise
     
-    def get_week_start_dates(self):
+    def get_date_ranges(self):
         """Get start dates for current week and last week (Monday 00:00) in UAE timezone"""
         # Get current time in UAE timezone
         now_uae = datetime.now(self.uae_tz)
@@ -87,10 +87,10 @@ class OdooAPI:
             datetime.min.time()
         ).replace(tzinfo=self.uae_tz)
         
-        # Last week start (Monday 00:00) in UAE timezone
-        last_week_start = current_week_start - timedelta(weeks=1)
+        # Last 14 days start
+        last_14_days_start = current_week_start - timedelta(weeks=1)
         
-        return last_week_start, current_week_start
+        return last_14_days_start, current_week_start
     
     def get_today_range(self):
         """Get start and end of today in UAE timezone"""
@@ -105,17 +105,17 @@ class OdooAPI:
     
     def get_forwarding_orders_train_data(self):
         """1st Item: Forwarding orders with train departure this week and last week"""
-        last_week_start, current_week_start = self.get_week_start_dates()
+        last_14_days_start, current_week_start = self.get_date_ranges()
         current_week_end = current_week_start + timedelta(weeks=1)
         
         # Format dates for Odoo
-        last_week_str = last_week_start.strftime('%Y-%m-%d %H:%M:%S')
+        last_14_days_str = last_14_days_start.strftime('%Y-%m-%d %H:%M:%S')
         current_week_str = current_week_start.strftime('%Y-%m-%d %H:%M:%S')
         current_week_end_str = current_week_end.strftime('%Y-%m-%d %H:%M:%S')
         
         domain = [
             ['x_studio_selection_field_83c_1ig067df9', 'in', ['NDP Train Departed', 'Train Arrived at Destination']],
-            ['x_studio_actual_train_departure', '>=', last_week_str],
+            ['x_studio_actual_train_departure', '>=', last_14_days_str],
             ['x_studio_actual_train_departure', '<', current_week_end_str]
         ]
         

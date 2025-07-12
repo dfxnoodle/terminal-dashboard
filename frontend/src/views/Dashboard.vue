@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-10">
+  <div class="p-10 space-y-10">
     <!-- Loading State -->
     <div v-if="loading" class="flex justify-center items-center py-20">
       <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-brand-red"></div>
@@ -49,11 +49,11 @@
         
         <!-- Daily breakdown chart -->
         <div class="mt-6" v-if="Object.keys(dashboardData.forwarding_orders?.daily_counts || {}).length > 0">
-          <h3 class="text-lg font-semibold text-brand-gray mb-3">Daily Breakdown (Last 7 Days)</h3>
+          <h3 class="text-lg font-semibold text-brand-gray mb-3">Daily Breakdown (Last 14 Days)</h3>
           <div class="bg-brand-light-gray p-4 rounded-lg">
             <div class="grid grid-cols-7 gap-3">
               <div 
-                v-for="(dayData, index) in getLast7Days()" 
+                v-for="(dayData, index) in getLast14Days()" 
                 :key="index"
                 class="text-center p-3 bg-white rounded-lg shadow-sm"
               >
@@ -110,7 +110,7 @@
         <div class="mb-8">
           <h3 class="text-xl font-semibold text-brand-gray mb-4">ICAD Terminal</h3>
           <div v-if="getFilteredStockpiles(dashboardData.stockpiles?.ICAD).length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            <StockpileBar v-for="stockpile in getFilteredStockpiles(dashboardData.stockpiles?.ICAD)" :key="stockpile.name" :stockpile="stockpile" />
+            <StockpileBar v-for="stockpile in getFilteredStockpiles(dashboardData.stockpiles?.ICAD)" :key="stockpile.name" :stockpile="stockpile" :rounding="rounding" />
           </div>
           <p v-else class="text-gray-500">No stockpile data available for ICAD terminal.</p>
         </div>
@@ -119,7 +119,7 @@
         <div>
           <h3 class="text-xl font-semibold text-brand-gray mb-4">DIC Terminal</h3>
           <div v-if="getFilteredStockpiles(dashboardData.stockpiles?.DIC).length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            <StockpileBar v-for="stockpile in getFilteredStockpiles(dashboardData.stockpiles?.DIC)" :key="stockpile.name" :stockpile="stockpile" />
+            <StockpileBar v-for="stockpile in getFilteredStockpiles(dashboardData.stockpiles?.DIC)" :key="stockpile.name" :stockpile="stockpile" :rounding="rounding" />
           </div>
           <p v-else class="text-gray-500">No stockpile data available for DIC terminal.</p>
         </div>
@@ -156,7 +156,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { apiService } from '../services/api'
 import { authService } from '../services/auth'
@@ -167,7 +167,13 @@ export default {
   components: {
     StockpileBar
   },
-  setup() {
+  props: {
+    rounding: {
+      type: Number,
+      default: 0
+    }
+  },
+  setup(props) {
     const router = useRouter()
     const loading = ref(false)
     const error = ref(null)
@@ -190,7 +196,11 @@ export default {
     }
 
     const formatWeight = (weight) => {
-      return (weight).toFixed(2)
+      if (props.rounding === 0) {
+        return Math.round(weight)
+      } else {
+        return (Math.round(weight / props.rounding) * props.rounding).toFixed(0)
+      }
     }
 
     const getTodayCount = () => {
@@ -206,20 +216,20 @@ export default {
       return stockpiles.filter(stockpile => stockpile.capacity > 0)
     }
 
-    const getLast7Days = () => {
+    const getLast14Days = () => {
       const today = new Date()
-      const last7Days = []
+      const last14Days = []
       const dailyCounts = dashboardData.value.forwarding_orders?.daily_counts || {}
       
       // Generate the last 7 days (including today)
-      for (let i = 6; i >= 0; i--) {
+      for (let i = 13; i >= 0; i--) {
         const date = new Date(today)
         date.setDate(today.getDate() - i)
         
         const dateString = date.toISOString().split('T')[0] // YYYY-MM-DD format
         const count = dailyCounts[dateString] || 0
         
-        last7Days.push({
+        last14Days.push({
           date: dateString,
           count: count,
           fullDate: date.toLocaleDateString('en-GB', { 
@@ -231,7 +241,7 @@ export default {
         })
       }
       
-      return last7Days
+      return last14Days
     }
 
     const loadDashboardData = async () => {
@@ -285,7 +295,7 @@ export default {
       formatWeight,
       getTodayCount,
       getFilteredStockpiles,
-      getLast7Days,
+      getLast14Days,
       loadDashboardData,
       toggleAutoRefresh,
       handleLogout
@@ -315,3 +325,4 @@ export default {
   @apply bg-gray-50 rounded-lg p-4;
 }
 </style>
+
