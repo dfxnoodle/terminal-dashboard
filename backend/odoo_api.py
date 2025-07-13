@@ -152,7 +152,8 @@ class OdooAPI:
             'last_week_count': len(last_week_orders),
             'daily_counts': daily_counts,
             'current_week_orders': current_week_orders,
-            'last_week_orders': last_week_orders
+            'last_week_orders': last_week_orders,
+            'orders': orders  # Add the raw orders list here
         }
     
     def get_first_mile_truck_data(self):

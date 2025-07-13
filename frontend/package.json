@@ -13,12 +13,14 @@
     "vue-router": "^4.5.1",
     "axios": "^1.10.0",
     "chart.js": "^4.5.0",
-    "vue-chartjs": "^5.3.2"
+    "vue-chartjs": "^5.3.2",
+    "chartjs-adapter-date-fns": "^2.0.0",
+    "date-fns": "^4.1.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.0",
     "vite": "^7.0.4",
-    "tailwindcss": "^4.1.11",
+    "tailwindcss": "^3.4.17",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6"
   }

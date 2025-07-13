@@ -41,7 +41,7 @@ fi
 
 export NETWORK_MODE=true
 if [ -d "../.venv" ] || command -v uvicorn &> /dev/null; then
-    nohup $PYTHON_CMD -m uvicorn main:app --host $BACKEND_HOST --port 8003 > ../backend.log 2>&1 &
+    nohup /home/terminal-dashboard/.venv/bin/uvicorn main:app --host $BACKEND_HOST --port 8003 > ../backend.log 2>&1 &
 else
     echo "❌ uvicorn not available. Please install dependencies first."
     echo "   Run: pip3 install -r requirements.txt"
@@ -72,5 +72,5 @@ echo "📝 Logs are being written to backend.log and frontend.log"
 echo "⚠️  Note: Services are exposed to the network. Ensure firewall settings are appropriate."
 echo ""
 echo "To stop the servers, you will need to manually find and kill the processes."
-echo "You can use 'ps aux | grep uvicorn' and 'ps aux | grep vite' to find the PIDs."
+echo "You can use ps aux | egrep 'uvicorn|vite'/pkill -f 'uvicorn|vite' to find the PIDs."
 

@@ -64,6 +64,11 @@
             </div>
           </div>
         </div>
+
+        <!-- Departure Dot Plot Chart -->
+        <div class="mt-6" v-if="dashboardData.forwarding_orders?.orders && dashboardData.forwarding_orders.orders.length > 0">
+          <DepartureDotPlot :orders="dashboardData.forwarding_orders.orders" />
+        </div>
       </div>
 
       <!-- 2nd, 3rd & 4th Items: Truck Orders -->
@@ -161,11 +166,13 @@ import { useRouter } from 'vue-router'
 import { apiService } from '../services/api'
 import { authService } from '../services/auth'
 import StockpileBar from '../components/StockpileBar.vue'
+import DepartureDotPlot from '../components/DepartureDotPlot.vue'
 
 export default {
   name: 'Dashboard',
   components: {
-    StockpileBar
+    StockpileBar,
+    DepartureDotPlot
   },
   props: {
     rounding: {
