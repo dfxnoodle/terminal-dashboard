@@ -149,9 +149,28 @@ export default {
                   const time = new Date(order.x_studio_actual_train_departure);
                   
                   const lines = [];
-                  lines.push(`ID: ${order.id}`);
+                  
+                  // Forwarding Order Number (if available)
+                  if (order.x_name) {
+                    lines.push(`Order: ${order.x_name}`);
+                  } else {
+                    lines.push(`ID: ${order.id}`);
+                  }
+                  
+                  // Train ID
+                  if (order.x_studio_train_id) {
+                    lines.push(`Train: ${order.x_studio_train_id}`);
+                  }
+                  
+                  // Departure Time
                   lines.push(`Time: ${time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`);
                   
+                  // Destination Terminal
+                  if (order.x_studio_destination_terminal) {
+                    lines.push(`Destination: ${order.x_studio_destination_terminal}`);
+                  }
+                  
+                  // Status
                   if (order.x_studio_selection_field_83c_1ig067df9) {
                     lines.push(`Status: ${order.x_studio_selection_field_83c_1ig067df9}`);
                   }

@@ -122,7 +122,13 @@ class OdooAPI:
         orders = self.execute_kw(
             'x_fwo', 'search_read',
             [domain],
-            {'fields': ['x_studio_actual_train_departure', 'x_studio_selection_field_83c_1ig067df9']}
+            {'fields': [
+                'x_studio_actual_train_departure', 
+                'x_studio_selection_field_83c_1ig067df9',
+                'x_studio_destination_terminal',
+                'x_name',
+                'x_studio_train_id'
+            ]}
         )
         
         # Group by week and day
