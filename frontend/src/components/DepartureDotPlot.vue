@@ -21,8 +21,29 @@ export default {
   setup(props) {
     const chartCanvas = ref(null);
     let chartInstance = null;
-    const trainIcon = new Image(24, 24);
-    trainIcon.src = '/train-icon.svg';
+    
+    // Create colored train icons for different destinations
+    const createColoredTrainIcon = (color) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 24;
+      canvas.height = 24;
+      const ctx = canvas.getContext('2d');
+      
+      // Create a simple train icon with the specified color
+      ctx.fillStyle = color;
+      ctx.fillRect(2, 8, 20, 8); // Main body
+      ctx.fillRect(4, 6, 4, 4); // Front cabin
+      ctx.fillRect(16, 6, 4, 4); // Rear cabin
+      ctx.fillRect(0, 14, 4, 4); // Front wheels
+      ctx.fillRect(8, 14, 4, 4); // Middle wheels
+      ctx.fillRect(16, 14, 4, 4); // Rear wheels
+      ctx.fillRect(20, 14, 4, 4); // Back wheels
+      
+      return canvas;
+    };
+    
+    const icadTrainIcon = createColoredTrainIcon('#EF4444'); // Red for ICAD
+    const dicTrainIcon = createColoredTrainIcon('#F97316');  // Orange for DIC
 
     const processData = (orders) => {
       // Helper to get date string in 'YYYY-MM-DD' format, respecting local timezone
@@ -84,12 +105,12 @@ export default {
 
       const datasets = [];
       
-      // ICAD dataset (red color)
+      // ICAD dataset (red train icons)
       if (icadDataPoints.length > 0) {
         datasets.push({
           label: 'ICAD',
           data: icadDataPoints,
-          pointStyle: trainIcon,
+          pointStyle: icadTrainIcon,
           radius: 12,
           hoverRadius: 16,
           backgroundColor: '#EF4444', // Red color for ICAD
@@ -97,12 +118,12 @@ export default {
         });
       }
       
-      // DIC dataset (orange color)
+      // DIC dataset (orange train icons)
       if (dicDataPoints.length > 0) {
         datasets.push({
           label: 'DIC',
           data: dicDataPoints,
-          pointStyle: trainIcon,
+          pointStyle: dicTrainIcon,
           radius: 12,
           hoverRadius: 16,
           backgroundColor: '#F97316', // Orange color for DIC
@@ -302,11 +323,8 @@ export default {
     };
 
     onMounted(() => {
-      if (trainIcon.complete) {
-        renderChart();
-      } else {
-        trainIcon.onload = renderChart;
-      }
+      // Icons are created programmatically, so render immediately
+      renderChart();
     });
 
     watch(() => props.orders, () => {
