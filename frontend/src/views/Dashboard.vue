@@ -1,5 +1,5 @@
 <template>
-  <div class="p-10 space-y-10">
+  <div class="p-4 md:p-10 space-y-10">
     <!-- Loading State -->
     <div v-if="loading" class="flex justify-center items-center py-20">
       <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-brand-red"></div>

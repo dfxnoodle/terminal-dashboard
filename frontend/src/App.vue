@@ -27,7 +27,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center py-4">
           <div class="flex items-center space-x-4">
-            <img src="/etihad_rail_logo.png" alt="Etihad Rail Logo" class="h-10 w-10">
+            <img src="/etihad_rail_logo.png" alt="Etihad Rail Logo" class="h-10 w-10 bg-white rounded-full">
             <h1 class="text-2xl font-bold text-white">Aggregates Operations Dashboard</h1>
           </div>
           <div class="flex items-center space-x-6">
@@ -61,7 +61,7 @@
     </header>
 
     <!-- Main content -->
-    <main :class="isLoginPage ? '' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10'">
+    <main :class="isLoginPage ? '' : 'max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-10 relative z-10'">
       <router-view :rounding="rounding" />
     </main>
 

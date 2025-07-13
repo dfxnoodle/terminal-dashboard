@@ -30,7 +30,7 @@
     <div class="absolute inset-0 bg-black bg-opacity-50"></div>
 
     <!-- Login Form Overlay -->
-    <div class="relative z-10 h-full flex items-center justify-center p-8">
+    <div class="relative z-10 h-full flex items-center justify-center p-4 sm:p-8">
       <div class="max-w-md w-full">
         <!-- Login Card with Glass Effect -->
         <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white border-opacity-20">
