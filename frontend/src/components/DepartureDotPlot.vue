@@ -29,8 +29,8 @@ export default {
         const response = await fetch('/train-icon.svg');
         const svgText = await response.text();
         
-        // Replace the fill color in the SVG
-        const coloredSvg = svgText.replace(/fill="[^"]*"/g, `fill="${color}"`);
+        // Replace only the main fill color, not fill="none"
+        const coloredSvg = svgText.replace(/fill="#[A-Fa-f0-9]{6}"/g, `fill="${color}"`);
         
         // Create a blob and object URL
         const blob = new Blob([coloredSvg], { type: 'image/svg+xml' });
@@ -48,14 +48,23 @@ export default {
         });
       } catch (error) {
         console.error('Error creating colored train icon:', error);
-        // Fallback to a simple colored rectangle if SVG loading fails
-        const canvas = document.createElement('canvas');
-        canvas.width = 24;
-        canvas.height = 24;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = color;
-        ctx.fillRect(0, 0, 24, 24);
-        return canvas;
+        // Fallback: create the train icon directly from the SVG template
+        const trainSvg = `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="${color}">
+          <path d="M0 0h24v24H0V0z" fill="none"/>
+          <path d="M12 2c-4 0-8 .5-8 4v9.5C4 17.43 5.57 19 7.5 19L6 20.5v.5h12v-.5L16.5 19c1.93 0 3.5-1.57 3.5-3.5V6c0-3.5-4-4-8-4zm0 2c2.76 0 5 1.12 5 2.5V12H7V6.5C7 5.12 9.24 4 12 4zm-3.5 13.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm7 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM7 15h10v-1.5c0-.83-.67-1.5-1.5-1.5h-7c-.83 0-1.5.67-1.5 1.5V15z"/>
+        </svg>`;
+        
+        const blob = new Blob([trainSvg], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        const img = new Image(24, 24);
+        img.src = url;
+        
+        return new Promise((resolve) => {
+          img.onload = () => {
+            URL.revokeObjectURL(url);
+            resolve(img);
+          };
+        });
       }
     };
     
