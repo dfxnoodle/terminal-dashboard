@@ -145,7 +145,7 @@ export default {
             legend: {
               display: true,
               position: 'top',
-              align: 'end',
+              align: 'center',
               labels: {
                 usePointStyle: true,
                 pointStyle: 'circle',
