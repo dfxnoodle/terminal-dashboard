@@ -47,7 +47,7 @@
           </div>
         </div>
         
-        <!-- Daily breakdown chart -->
+        <!-- Daily breakdown chart 
         <div class="mt-6" v-if="Object.keys(dashboardData.forwarding_orders?.daily_counts || {}).length > 0">
           <h3 class="text-lg font-semibold text-brand-gray mb-3">Daily Breakdown (Last 14 Days)</h3>
           <div class="bg-brand-light-gray p-4 rounded-lg">
@@ -63,7 +63,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
 
         <!-- Departure Dot Plot Chart -->
         <div class="mt-6" v-if="dashboardData.forwarding_orders?.orders && dashboardData.forwarding_orders.orders.length > 0">

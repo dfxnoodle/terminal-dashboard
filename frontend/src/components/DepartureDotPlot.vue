@@ -46,7 +46,10 @@ export default {
       // This places the oldest date at the top of the Y-axis.
       const sortedYLabels = Array.from(yLabels).sort((a, b) => b.localeCompare(a));
 
-      const dataPoints = [];
+      // Separate data points by destination for different styling
+      const icadDataPoints = [];
+      const dicDataPoints = [];
+      
       if (orders) {
         // Sort orders by departure time to ensure correct processing
         const sortedOrders = [...orders].sort((a, b) => 
@@ -63,22 +66,52 @@ export default {
             const timeValue = new Date(departureDateTime);
             timeValue.setFullYear(2000, 0, 1); // Normalize date part to a constant
 
-            dataPoints.push({
+            const dataPoint = {
               x: timeValue,
               y: dateStr,
               order: order // Keep original order data for tooltips
-            });
+            };
+
+            // Separate by destination
+            if (order.x_studio_destination_terminal === 'DIC') {
+              dicDataPoints.push(dataPoint);
+            } else {
+              icadDataPoints.push(dataPoint);
+            }
           }
         });
       }
 
-      return {
-        datasets: [{
-          data: dataPoints,
+      const datasets = [];
+      
+      // ICAD dataset (red color)
+      if (icadDataPoints.length > 0) {
+        datasets.push({
+          label: 'ICAD',
+          data: icadDataPoints,
           pointStyle: trainIcon,
           radius: 12,
           hoverRadius: 16,
-        }],
+          backgroundColor: '#EF4444', // Red color for ICAD
+          borderColor: '#DC2626',
+        });
+      }
+      
+      // DIC dataset (orange color)
+      if (dicDataPoints.length > 0) {
+        datasets.push({
+          label: 'DIC',
+          data: dicDataPoints,
+          pointStyle: trainIcon,
+          radius: 12,
+          hoverRadius: 16,
+          backgroundColor: '#F97316', // Orange color for DIC
+          borderColor: '#EA580C',
+        });
+      }
+
+      return {
+        datasets: datasets,
         labels: sortedYLabels,
       };
     };
@@ -110,7 +143,29 @@ export default {
           },
           plugins: {
             legend: {
-              display: false, // Hide legend as it's not needed for a single dataset
+              display: true,
+              position: 'top',
+              align: 'end',
+              labels: {
+                usePointStyle: true,
+                pointStyle: 'circle',
+                padding: 20,
+                font: {
+                  size: 12,
+                  weight: 'bold'
+                },
+                generateLabels: function(chart) {
+                  const datasets = chart.data.datasets;
+                  return datasets.map((dataset, i) => ({
+                    text: dataset.label,
+                    fillStyle: dataset.backgroundColor,
+                    strokeStyle: dataset.borderColor,
+                    lineWidth: 2,
+                    hidden: false,
+                    datasetIndex: i
+                  }));
+                }
+              }
             },
             title: {
               display: true,
