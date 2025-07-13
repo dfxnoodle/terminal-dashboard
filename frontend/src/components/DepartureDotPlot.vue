@@ -22,28 +22,55 @@ export default {
     const chartCanvas = ref(null);
     let chartInstance = null;
     
-    // Create colored train icons for different destinations
-    const createColoredTrainIcon = (color) => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 24;
-      canvas.height = 24;
-      const ctx = canvas.getContext('2d');
-      
-      // Create a simple train icon with the specified color
-      ctx.fillStyle = color;
-      ctx.fillRect(2, 8, 20, 8); // Main body
-      ctx.fillRect(4, 6, 4, 4); // Front cabin
-      ctx.fillRect(16, 6, 4, 4); // Rear cabin
-      ctx.fillRect(0, 14, 4, 4); // Front wheels
-      ctx.fillRect(8, 14, 4, 4); // Middle wheels
-      ctx.fillRect(16, 14, 4, 4); // Rear wheels
-      ctx.fillRect(20, 14, 4, 4); // Back wheels
-      
-      return canvas;
+    // Create colored train icons from the original SVG
+    const createColoredTrainIcon = async (color) => {
+      try {
+        // Fetch the original SVG
+        const response = await fetch('/train-icon.svg');
+        const svgText = await response.text();
+        
+        // Replace the fill color in the SVG
+        const coloredSvg = svgText.replace(/fill="[^"]*"/g, `fill="${color}"`);
+        
+        // Create a blob and object URL
+        const blob = new Blob([coloredSvg], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        
+        // Create an image from the colored SVG
+        const img = new Image(24, 24);
+        img.src = url;
+        
+        return new Promise((resolve) => {
+          img.onload = () => {
+            URL.revokeObjectURL(url); // Clean up
+            resolve(img);
+          };
+        });
+      } catch (error) {
+        console.error('Error creating colored train icon:', error);
+        // Fallback to a simple colored rectangle if SVG loading fails
+        const canvas = document.createElement('canvas');
+        canvas.width = 24;
+        canvas.height = 24;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = color;
+        ctx.fillRect(0, 0, 24, 24);
+        return canvas;
+      }
     };
     
-    const icadTrainIcon = createColoredTrainIcon('#EF4444'); // Red for ICAD
-    const dicTrainIcon = createColoredTrainIcon('#F97316');  // Orange for DIC
+    // Create icons for both destinations
+    let icadTrainIcon = null;
+    let dicTrainIcon = null;
+    
+    // Initialize icons
+    const initIcons = async () => {
+      icadTrainIcon = await createColoredTrainIcon('#f02222'); // Red for ICAD
+      dicTrainIcon = await createColoredTrainIcon('#F97316');  // Orange for DIC
+      
+      // Render chart after icons are ready
+      renderChart();
+    };
 
     const processData = (orders) => {
       // Helper to get date string in 'YYYY-MM-DD' format, respecting local timezone
@@ -144,8 +171,8 @@ export default {
 
       const { datasets, labels } = processData(props.orders);
 
-      // Always render the chart, even if there's no data, to show the axes and labels.
-      if (!labels || labels.length === 0) {
+      // Don't render if icons aren't ready yet or no labels
+      if (!icadTrainIcon || !dicTrainIcon || !labels || labels.length === 0) {
         return;
       }
 
@@ -323,12 +350,15 @@ export default {
     };
 
     onMounted(() => {
-      // Icons are created programmatically, so render immediately
-      renderChart();
+      // Initialize colored icons and render chart when ready
+      initIcons();
     });
 
     watch(() => props.orders, () => {
-      renderChart();
+      // Only render if icons are ready
+      if (icadTrainIcon && dicTrainIcon) {
+        renderChart();
+      }
     }, { deep: true });
 
     return {
