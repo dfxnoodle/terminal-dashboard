@@ -113,9 +113,21 @@ export default {
           new Date(a.x_studio_actual_train_departure) - new Date(b.x_studio_actual_train_departure)
         );
 
-        sortedOrders.forEach(order => {
+        sortedOrders.forEach((order, index) => {
+          // Parse the datetime string assuming it's in UAE timezone (UTC+4)
+          // but treat it as local time to avoid timezone conversion issues
           const departureDateTime = new Date(order.x_studio_actual_train_departure);
           const dateStr = toYYYYMMDD(departureDateTime);
+
+          // Debug: log first few orders to see what dates we're getting
+          if (index < 5) {
+            console.log(`Order ${index + 1}:`, {
+              departure: order.x_studio_actual_train_departure,
+              parsed: departureDateTime,
+              dateStr: dateStr,
+              inRange: yLabels.has(dateStr)
+            });
+          }
 
           // Only include data points that fall within our 14-day window
           if (yLabels.has(dateStr)) {
@@ -138,6 +150,13 @@ export default {
           }
         });
       }
+
+      // Debug: log final data points
+      console.log('DepartureDotPlot - Processed data points:', {
+        icadCount: icadDataPoints.length,
+        dicCount: dicDataPoints.length,
+        totalProcessed: icadDataPoints.length + dicDataPoints.length
+      });
 
       const datasets = [];
       

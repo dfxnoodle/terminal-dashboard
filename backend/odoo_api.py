@@ -106,17 +106,20 @@ class OdooAPI:
     def get_forwarding_orders_train_data(self):
         """1st Item: Forwarding orders with train departure this week and last week"""
         last_14_days_start, current_week_start = self.get_date_ranges()
-        current_week_end = current_week_start + timedelta(weeks=1)
         
-        # Format dates for Odoo
-        last_14_days_str = last_14_days_start.strftime('%Y-%m-%d %H:%M:%S')
+        # Get current time in UAE timezone and calculate actual 14 days ago
+        now_uae = datetime.now(self.uae_tz)
+        fourteen_days_ago = now_uae - timedelta(days=14)
+        
+        # Format dates for Odoo - use 14 days ago instead of just 2 weeks
+        last_14_days_str = fourteen_days_ago.strftime('%Y-%m-%d %H:%M:%S')
         current_week_str = current_week_start.strftime('%Y-%m-%d %H:%M:%S')
-        current_week_end_str = current_week_end.strftime('%Y-%m-%d %H:%M:%S')
+        now_str = now_uae.strftime('%Y-%m-%d %H:%M:%S')
         
         domain = [
             ['x_studio_selection_field_83c_1ig067df9', 'in', ['NDP Train Departed', 'Train Arrived at Destination']],
             ['x_studio_actual_train_departure', '>=', last_14_days_str],
-            ['x_studio_actual_train_departure', '<', current_week_end_str]
+            ['x_studio_actual_train_departure', '<', now_str]
         ]
         
         orders = self.execute_kw(
