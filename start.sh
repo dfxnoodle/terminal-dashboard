@@ -72,5 +72,5 @@ echo "📝 Logs are being written to backend.log and frontend.log"
 echo "⚠️  Note: Services are exposed to the network. Ensure firewall settings are appropriate."
 echo ""
 echo "To stop the servers, you will need to manually find and kill the processes."
-echo "You can use ps aux | egrep 'uvicorn|vite'/pkill -f 'uvicorn|vite' to find the PIDs."
+echo "You can use ps aux | egrep 'uvicorn|vite' to find the PIDs or simply use pkill -f 'uvicorn|vite' to kill all related processes."
 
