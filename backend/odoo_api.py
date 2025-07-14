@@ -139,6 +139,9 @@ class OdooAPI:
         last_week_orders = []
         daily_counts = {}
         
+        # Calculate last week start (Monday of previous week)
+        last_week_start = current_week_start - timedelta(weeks=1)
+        
         for order in orders:
             departure_str = order['x_studio_actual_train_departure']
             if departure_str:
@@ -146,13 +149,15 @@ class OdooAPI:
                 departure_dt = datetime.strptime(departure_str, '%Y-%m-%d %H:%M:%S')
                 departure_dt = departure_dt.replace(tzinfo=self.uae_tz)
                 
-                # Determine week
+                # Determine week - only count orders within specific week ranges
                 if departure_dt >= current_week_start:
+                    # Current week (from Monday of this week onwards)
                     current_week_orders.append(order)
-                else:
+                elif departure_dt >= last_week_start and departure_dt < current_week_start:
+                    # Last week (from Monday of last week to Sunday of last week)
                     last_week_orders.append(order)
                 
-                # Count by day
+                # Count by day (for all orders in the 14-day period)
                 day_key = departure_dt.strftime('%Y-%m-%d')
                 daily_counts[day_key] = daily_counts.get(day_key, 0) + 1
         
