@@ -22,7 +22,7 @@ cd backend
 # Activate virtual environment
 if [ -n "$VIRTUAL_ENV" ]; then
     echo "📦 Using active Python virtual environment: $VIRTUAL_ENV"
-    PYTHON_CMD="python"
+    PYTHON_CMD="python3"
 elif [ -d "../.venv" ]; then
     echo "📦 Activating Python virtual environment"
     source ../.venv/bin/activate
@@ -41,7 +41,7 @@ fi
 
 export NETWORK_MODE=true
 if [ -d "../.venv" ] || command -v uvicorn &> /dev/null; then
-    nohup /home/terminal-dashboard/.venv/bin/uvicorn main:app --host $BACKEND_HOST --port 8003 > ../backend.log 2>&1 &
+    nohup $PYTHON_CMD -m uvicorn main:app --host $BACKEND_HOST --port 8003 > ../backend.log 2>&1 &
 else
     echo "❌ uvicorn not available. Please install dependencies first."
     echo "   Run: pip3 install -r requirements.txt"

@@ -32,7 +32,7 @@
       <!-- 1st Item: Forwarding Orders Train Departure -->
       <div class="card">
         <h2 class="card-header">Train Departures</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 py-4">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6 py-4">
           <div class="text-center border-r border-gray-200">
             <div class="metric-value text-brand-gray">{{ dashboardData.forwarding_orders?.last_week_count || 0 }}</div>
             <div class="metric-label">Last Week</div>
@@ -41,9 +41,17 @@
             <div class="metric-value text-brand-red">{{ dashboardData.forwarding_orders?.current_week_count || 0 }}</div>
             <div class="metric-label">This Week</div>
           </div>
-          <div class="text-center">
+          <div class="text-center border-r border-gray-200">
             <div class="metric-value text-green-600">{{ getTodayCount() }}</div>
             <div class="metric-label">Today</div>
+          </div>
+          <div class="text-center border-r border-gray-200">
+            <div class="metric-value text-red-600">{{ getAverageStockpileAge('ICAD') }}</div>
+            <div class="metric-label">ICAD Avg Age (hrs)</div>
+          </div>
+          <div class="text-center">
+            <div class="metric-value text-amber-600">{{ getAverageStockpileAge('DIC') }}</div>
+            <div class="metric-label">DIC Avg Age (hrs)</div>
           </div>
         </div>
         
@@ -223,6 +231,30 @@ export default {
       return stockpiles.filter(stockpile => stockpile.capacity > 0)
     }
 
+    const getAverageStockpileAge = (terminal) => {
+      const stockpiles = dashboardData.value.stockpiles?.[terminal]
+      if (!stockpiles || !Array.isArray(stockpiles)) {
+        return 'N/A'
+      }
+      
+      // Filter stockpiles with quantity over 150 and valid age data
+      const eligibleStockpiles = stockpiles.filter(stockpile => 
+        stockpile.quantity > 150 && 
+        stockpile.material_age_hours !== null && 
+        stockpile.material_age_hours !== undefined &&
+        stockpile.material_age_hours > 0
+      )
+      
+      if (eligibleStockpiles.length === 0) {
+        return 'N/A'
+      }
+      
+      const totalAge = eligibleStockpiles.reduce((sum, stockpile) => sum + stockpile.material_age_hours, 0)
+      const averageAge = totalAge / eligibleStockpiles.length
+      
+      return Math.round(averageAge)
+    }
+
     const getLast14Days = () => {
       const today = new Date()
       const last14Days = []
@@ -302,6 +334,7 @@ export default {
       formatWeight,
       getTodayCount,
       getFilteredStockpiles,
+      getAverageStockpileAge,
       getLast14Days,
       loadDashboardData,
       toggleAutoRefresh,

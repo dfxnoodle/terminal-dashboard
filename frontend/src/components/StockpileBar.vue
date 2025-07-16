@@ -56,13 +56,13 @@
     
     <!-- Material Age -->
     <div class="text-xs text-gray-500" v-if="stockpile.material_age_hours">
-      Age: {{ formatAge(stockpile.material_age_hours) }}
+      Age: {{ Math.round(stockpile.material_age_hours) }} hours
     </div>
   </div>
 </template>
 
 <script>
-import { computed } from 'vue'
+import { computed, h } from 'vue'
 
 export default {
   name: 'StockpileBar',
@@ -142,25 +142,12 @@ export default {
       })
     }
 
-    const formatAge = (hours) => {
-      if (hours < 24) {
-        return `${Math.round(hours)}h`
-      } else if (hours < 168) { // Less than a week
-        const days = Math.round(hours / 24)
-        return `${days}d`
-      } else {
-        const weeks = Math.round(hours / 168)
-        return `${weeks}w`
-      }
-    }
-
     return {
       getUtilizationColor,
       getParticleColor,
       getParticleCount,
       getRandomPosition,
       formatNumber,
-      formatAge,
       formattedQuantity
     }
   }
