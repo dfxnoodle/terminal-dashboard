@@ -274,22 +274,20 @@ upstream terminal_dashboard_backend {
 # HTTP to HTTPS redirect
 server {
     listen 80;
-    server_name your-domain.com;  # Change this to your domain
+    server_name ethihad-rail-dashboard.linus.services;
     return 301 https://$server_name$request_uri;
 }
 
 # HTTPS server
 server {
     listen 443 ssl http2;
-    server_name your-domain.com;  # Change this to your domain
+    server_name ethihad-rail-dashboard.linus.services;
 
-    # SSL configuration (update paths to your certificates)
-    ssl_certificate /path/to/ssl/cert.pem;
-    ssl_certificate_key /path/to/ssl/key.pem;
-    ssl_session_cache shared:SSL:1m;
-    ssl_session_timeout 5m;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-    ssl_prefer_server_ciphers on;
+    # SSL configuration (certbot managed)
+    ssl_certificate /etc/letsencrypt/live/ethihad-rail-dashboard.linus.services/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/ethihad-rail-dashboard.linus.services/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
     # Security headers
     add_header X-Frame-Options DENY;
@@ -299,7 +297,7 @@ server {
 
     # Frontend static files
     location / {
-        root /path/to/terminal-dashboard/frontend/dist;  # Update this path
+        root /media/dinochlai/Data/terminal-dashboard/frontend/dist;
         try_files $uri $uri/ /index.html;
         
         # Enable compression
@@ -449,6 +447,11 @@ echo "   - BACKEND_PORT: Backend port (default: 8003)"
 echo "   - FRONTEND_HOST: Frontend bind address (default: 0.0.0.0)"
 echo "   - FRONTEND_PORT: Frontend port (default: 3003)"
 echo ""
+echo "🔒 HTTPS Setup for ethihad-rail-dashboard.linus.services:"
+echo "   1. Install certbot: sudo apt install certbot python3-certbot-nginx"
+echo "   2. Obtain SSL certificate: sudo certbot --nginx -d ethihad-rail-dashboard.linus.services"
+echo "   3. Start production: PRODUCTION_DOMAIN=ethihad-rail-dashboard.linus.services ./start-production.sh"
+echo ""
 echo "⚠️  Important notes:"
 echo "   1. Configure your .env file with production credentials"
 echo "   2. Use nginx/apache for better static file serving and SSL"
@@ -459,10 +462,14 @@ echo "   6. Use a process manager like systemd or pm2 for production"
 echo "   7. Unix socket /tmp/terminal_dashboard.sock provides better performance"
 echo "   8. Ensure nginx has permissions to access the Unix socket"
 echo ""
-echo "📋 Next Steps for GoDaddy DNS:"
+echo "📋 Next Steps for ethihad-rail-dashboard.linus.services:"
 echo "   1. Read DNS-SETUP-GUIDE.md for complete instructions"
 echo "   2. Get your server's public IP: curl -4 ifconfig.me"
-echo "   3. In GoDaddy DNS, add A record: @ → YOUR_SERVER_IP"
-echo "   4. In GoDaddy DNS, add A record: www → YOUR_SERVER_IP"
-echo "   5. Install SSL: sudo certbot --nginx -d yourdomain.com"
-echo "   6. Deploy: PRODUCTION_DOMAIN=yourdomain.com ./start-production.sh"
+echo "   3. Configure DNS A record: ethihad-rail-dashboard.linus.services → YOUR_SERVER_IP"
+echo "   4. Install nginx: sudo apt update && sudo apt install nginx"
+echo "   5. Copy nginx config: sudo cp nginx-production.conf /etc/nginx/sites-available/terminal-dashboard"
+echo "   6. Enable site: sudo ln -s /etc/nginx/sites-available/terminal-dashboard /etc/nginx/sites-enabled/"
+echo "   7. Test nginx: sudo nginx -t"
+echo "   8. Install certbot: sudo apt install certbot python3-certbot-nginx"
+echo "   9. Get SSL certificate: sudo certbot --nginx -d ethihad-rail-dashboard.linus.services"
+echo "   10. Deploy: PRODUCTION_DOMAIN=ethihad-rail-dashboard.linus.services ./start-production.sh"
