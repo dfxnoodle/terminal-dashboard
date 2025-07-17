@@ -133,6 +133,8 @@ export default {
           if (yLabels.has(dateStr)) {
             // X-axis value: Time of day, normalized to a single date (e.g., Jan 1, 2000)
             const timeValue = new Date(departureDateTime);
+            // Add 4 hours to convert from UTC to UAE time
+            timeValue.setHours(timeValue.getHours() + 4);
             timeValue.setFullYear(2000, 0, 1); // Normalize date part to a constant
 
             const dataPoint = {
@@ -278,6 +280,8 @@ export default {
                   const point = context.raw;
                   const order = point.order;
                   const time = new Date(order.x_studio_actual_train_departure);
+                  // Add 4 hours to convert from UTC to UAE time for display
+                  time.setHours(time.getHours() + 4);
                   
                   const lines = [];
                   
