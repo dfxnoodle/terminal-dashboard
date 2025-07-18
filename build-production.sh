@@ -3,7 +3,7 @@
 # Production build script for Terminal Dashboard
 # This script builds the frontend for production and prepares the backend
 
-set -e  # Exit on any error
+set -u -o pipefail
 
 echo "🏗️  Building Terminal Dashboard for Production"
 echo "============================================="
