@@ -297,7 +297,7 @@ server {
 
     # Frontend static files
     location / {
-        root /media/dinochlai/Data/terminal-dashboard/frontend/dist;
+        root /home/terminal-dashboard/frontend/dist;
         try_files $uri $uri/ /index.html;
         
         # Enable compression
