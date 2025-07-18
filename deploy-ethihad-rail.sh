@@ -6,7 +6,7 @@
 set -e
 
 DOMAIN="ethihad-rail-dashboard.linus.services"
-PROJECT_DIR="/media/dinochlai/Data/terminal-dashboard"
+PROJECT_DIR="/home/terminal-dashboard"
 
 echo "🚀 Deploying Terminal Dashboard to $DOMAIN"
 echo "=============================================="
