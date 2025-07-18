@@ -1,7 +1,9 @@
 import axios from 'axios'
 import { authService } from './auth'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8003'
+// Use the same origin in production, fallback to localhost for development
+const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  (window.location.origin.includes('localhost') ? 'http://localhost:8003' : window.location.origin)
 
 class ApiService {
   constructor() {

@@ -370,7 +370,7 @@ server {
     }
 
     # Health check endpoint
-    location /health {
+    location /api/health {
         proxy_pass http://terminal_dashboard_backend/;
         proxy_set_header Host $host;
         access_log off;
