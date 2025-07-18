@@ -274,18 +274,18 @@ upstream terminal_dashboard_backend {
 # HTTP to HTTPS redirect
 server {
     listen 80;
-    server_name ethihad-rail-dashboard.linus.services;
+    server_name etihad-rail-dashboard.linus.services;
     return 301 https://$server_name$request_uri;
 }
 
 # HTTPS server
 server {
     listen 443 ssl http2;
-    server_name ethihad-rail-dashboard.linus.services;
+    server_name etihad-rail-dashboard.linus.services;
 
     # SSL configuration (certbot managed)
-    ssl_certificate /etc/letsencrypt/live/ethihad-rail-dashboard.linus.services/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/ethihad-rail-dashboard.linus.services/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/etihad-rail-dashboard.linus.services/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/etihad-rail-dashboard.linus.services/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
@@ -447,10 +447,10 @@ echo "   - BACKEND_PORT: Backend port (default: 8003)"
 echo "   - FRONTEND_HOST: Frontend bind address (default: 0.0.0.0)"
 echo "   - FRONTEND_PORT: Frontend port (default: 3003)"
 echo ""
-echo "🔒 HTTPS Setup for ethihad-rail-dashboard.linus.services:"
+echo "🔒 HTTPS Setup for etihad-rail-dashboard.linus.services:"
 echo "   1. Install certbot: sudo apt install certbot python3-certbot-nginx"
-echo "   2. Obtain SSL certificate: sudo certbot --nginx -d ethihad-rail-dashboard.linus.services"
-echo "   3. Start production: PRODUCTION_DOMAIN=ethihad-rail-dashboard.linus.services ./start-production.sh"
+echo "   2. Obtain SSL certificate: sudo certbot --nginx -d etihad-rail-dashboard.linus.services"
+echo "   3. Start production: PRODUCTION_DOMAIN=etihad-rail-dashboard.linus.services ./start-production.sh"
 echo ""
 echo "⚠️  Important notes:"
 echo "   1. Configure your .env file with production credentials"
@@ -462,14 +462,14 @@ echo "   6. Use a process manager like systemd or pm2 for production"
 echo "   7. Unix socket /tmp/terminal_dashboard.sock provides better performance"
 echo "   8. Ensure nginx has permissions to access the Unix socket"
 echo ""
-echo "📋 Next Steps for ethihad-rail-dashboard.linus.services:"
+echo "📋 Next Steps for etihad-rail-dashboard.linus.services:"
 echo "   1. Read DNS-SETUP-GUIDE.md for complete instructions"
 echo "   2. Get your server's public IP: curl -4 ifconfig.me"
-echo "   3. Configure DNS A record: ethihad-rail-dashboard.linus.services → YOUR_SERVER_IP"
+echo "   3. Configure DNS A record: etihad-rail-dashboard.linus.services → YOUR_SERVER_IP"
 echo "   4. Install nginx: sudo apt update && sudo apt install nginx"
 echo "   5. Copy nginx config: sudo cp nginx-production.conf /etc/nginx/sites-available/terminal-dashboard"
 echo "   6. Enable site: sudo ln -s /etc/nginx/sites-available/terminal-dashboard /etc/nginx/sites-enabled/"
 echo "   7. Test nginx: sudo nginx -t"
 echo "   8. Install certbot: sudo apt install certbot python3-certbot-nginx"
-echo "   9. Get SSL certificate: sudo certbot --nginx -d ethihad-rail-dashboard.linus.services"
-echo "   10. Deploy: PRODUCTION_DOMAIN=ethihad-rail-dashboard.linus.services ./start-production.sh"
+echo "   9. Get SSL certificate: sudo certbot --nginx -d etihad-rail-dashboard.linus.services"
+echo "   10. Deploy: PRODUCTION_DOMAIN=etihad-rail-dashboard.linus.services ./start-production.sh"

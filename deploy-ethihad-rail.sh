@@ -1,12 +1,15 @@
 #!/bin/bash
 
-# Deployment script for ethihad-rail-dashboard.linus.services
+# Deployment script for etihad-rail-dashboard.linus.services
 # This script automates the complete deployment process with HTTPS
 
 set -e
 
-DOMAIN="ethihad-rail-dashboard.linus.services"
+DOMAIN="etihad-rail-dashboard.linus.services"
 PROJECT_DIR="/home/terminal-dashboard"
+
+# Export the domain for use in build script
+export PRODUCTION_DOMAIN="$DOMAIN"
 
 echo "🚀 Deploying Terminal Dashboard to $DOMAIN"
 echo "=============================================="
