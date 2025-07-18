@@ -133,14 +133,14 @@ export NODE_ENV=production
 export NETWORK_MODE=true
 
 # Start backend with production settings (4 workers for better performance)
-nohup uvicorn main:app \
-    --uds /tmp/terminal_dashboard.sock \
-    --workers 4 \
-    --worker-class uvicorn.workers.UvicornWorker \
-    --access-log \
-    --log-level info \
-    --timeout-keep-alive 65 \
-    --limit-concurrency 1000 > ../logs/backend-production.log 2>&1 &
+nohup /home/terminal-dashboard/backend/.venv/bin/uvicorn main:app \
+      --uds /tmp/terminal_dashboard.sock \
+      --workers 4 \
+      --access-log \
+      --log-level info \
+      --timeout-keep-alive 65 \
+      --limit-concurrency 1000 \
+      > ../logs/backend-production.log 2>&1 &
 
 BACKEND_PID=$!
 
