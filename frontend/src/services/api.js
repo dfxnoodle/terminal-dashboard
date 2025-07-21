@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { authService } from './auth'
 
 // Use the same origin in production, fallback to localhost for development
 const API_BASE_URL = import.meta.env.VITE_API_URL || 
@@ -20,9 +19,9 @@ class ApiService {
       (config) => {
         console.log(`Making ${config.method?.toUpperCase()} request to ${config.url}`)
         
-        // Add auth token to protected routes
-        const token = authService.getToken()
-        if (token && !config.url?.includes('/auth/')) {
+        // Add auth token from localStorage for dashboard requests
+        const token = localStorage.getItem('token')
+        if (token) {
           config.headers.Authorization = `Bearer ${token}`
         }
         
@@ -41,7 +40,8 @@ class ApiService {
       (error) => {
         // Handle 401 errors by redirecting to login
         if (error.response?.status === 401) {
-          authService.logout()
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
           window.location.href = '/login'
         }
         

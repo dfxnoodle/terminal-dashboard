@@ -15,7 +15,8 @@
     "chart.js": "^4.5.0",
     "vue-chartjs": "^5.3.2",
     "chartjs-adapter-date-fns": "^2.0.0",
-    "date-fns": "^4.1.0"
+    "date-fns": "^4.1.0",
+    "pinia": "^2.1.7"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.0",

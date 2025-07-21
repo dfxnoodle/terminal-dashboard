@@ -120,12 +120,13 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { authService } from '../services/auth'
+import { useAuthStore } from '../stores/auth'
 
 export default {
   name: 'Login',
   setup() {
     const router = useRouter()
+    const authStore = useAuthStore()
     const loading = ref(false)
     const error = ref(null)
     const videoLoading = ref(true)
@@ -154,11 +155,11 @@ export default {
       error.value = null
 
       try {
-        const success = await authService.login(credentials.value.username, credentials.value.password)
-        if (success) {
+        const result = await authStore.login(credentials.value.username, credentials.value.password)
+        if (result.success) {
           router.push('/')
         } else {
-          error.value = 'Invalid username or password'
+          error.value = result.message || 'Invalid username or password'
         }
       } catch (err) {
         error.value = err.message || 'An error occurred during login'
@@ -169,7 +170,7 @@ export default {
 
     onMounted(() => {
       // Check if already authenticated
-      if (authService.isAuthenticated()) {
+      if (authStore.isAuthenticated) {
         router.push('/')
       }
     })

@@ -1,8 +1,8 @@
 [project]
 name = "terminal-dashboard"
-version = "0.1.0"
+version = "0.5.0"
 description = "Terminal Dashboard for Odoo Data Visualization"
-requires-python = ">=3.8"
+requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.104.0",
     "uvicorn>=0.24.0",
@@ -11,6 +11,11 @@ dependencies = [
     "pydantic>=2.0.0",
     "httpx>=0.25.0",
     "python-dateutil>=2.8.0",
+    "SQLAlchemy==2.0.41",
+    "aiosqlite==0.21.0",
+    "passlib[bcrypt]==1.7.4",
+    "python-jose[cryptography]==3.5.0",
+    "email-validator>=2.0.0",
 ]
 
 [build-system]

@@ -26,7 +26,7 @@
     <header v-if="!isLoginPage" class="bg-brand-dark shadow-md relative z-10">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center py-4">
-          <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-4 cursor-pointer hover:opacity-80 transition-opacity" @click="goToDashboard">
             <img src="/etihad_rail_logo.png" alt="Etihad Rail Logo" class="h-10 w-10 bg-white rounded-full">
             <h1 class="text-2xl font-bold text-white">Aggregates Operations Dashboard</h1>
           </div>
@@ -76,13 +76,14 @@
 
 <script>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { apiService } from './services/api'
 
 export default {
   name: 'App',
   setup() {
     const route = useRoute()
+    const router = useRouter()
     const connectionStatus = ref('loading')
     const lastUpdated = ref('')
     let healthCheckInterval = null
@@ -143,13 +144,20 @@ export default {
     // Use a watcher to update overflow when route changes
     watch(isLoginPage, updateBodyOverflow)
 
+    const goToDashboard = () => {
+      if (route.name !== 'Dashboard') {
+        router.push('/')
+      }
+    }
+
     return {
       connectionStatus,
       connectionStatusText,
       lastUpdated,
       isLoginPage,
       rounding,
-      onRoundingChange
+      onRoundingChange,
+      goToDashboard
     }
   }
 }

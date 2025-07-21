@@ -1,5 +1,61 @@
 <template>
-  <div class="p-4 md:p-10 space-y-10">
+  <div class="min-h-screen bg-gray-50">
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+      <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <img src="/etihad_rail_logo.png" alt="Etihad Rail" class="h-8 w-auto">
+            <h1 class="ml-4 text-xl font-semibold text-gray-900">Terminal Dashboard</h1>
+          </div>
+          
+          <div class="flex items-center space-x-4">
+            <!-- User Info -->
+            <div class="flex items-center space-x-3">
+              <span class="text-sm text-gray-700">Welcome, {{ user?.full_name || user?.username }}</span>
+              <span :class="getRoleClass(user?.role)" class="px-2 py-1 text-xs font-medium rounded-full">
+                {{ formatRole(user?.role) }}
+              </span>
+            </div>
+            
+            <!-- Admin Menu -->
+            <div v-if="authStore.isAdmin" class="relative">
+              <button 
+                @click="showAdminMenu = !showAdminMenu"
+                class="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+              >
+                <i class="fas fa-cog"></i>
+                <span>Admin</span>
+                <i class="fas fa-chevron-down"></i>
+              </button>
+              
+              <div v-if="showAdminMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                <router-link 
+                  to="/admin/users" 
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  @click="showAdminMenu = false"
+                >
+                  <i class="fas fa-users mr-2"></i>
+                  User Management
+                </router-link>
+              </div>
+            </div>
+            
+            <!-- Logout Button -->
+            <button 
+              @click="logout"
+              class="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+            >
+              <i class="fas fa-sign-out-alt"></i>
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <div class="p-2 md:p-4 space-y-4">
     <!-- Loading State -->
     <div v-if="loading" class="flex justify-center items-center py-20">
       <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-brand-red"></div>
@@ -7,7 +63,7 @@
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-6 rounded-md shadow-md">
+    <div v-else-if="error" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md shadow-md">
       <div class="flex">
         <div class="py-1">
           <svg class="h-6 w-6 text-red-500 mr-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -28,11 +84,11 @@
     </div>
 
     <!-- Dashboard Content -->
-    <div v-else class="space-y-10">
+    <div v-else class="space-y-4">
       <!-- 1st Item: Forwarding Orders Train Departure -->
       <div class="card">
         <h2 class="card-header">Train Departures</h2>
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-6 py-4">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 py-3">
           <div class="text-center border-r border-gray-200">
             <div class="metric-value text-brand-gray">{{ dashboardData.forwarding_orders?.last_week_count || 0 }}</div>
             <div class="metric-label">Last Week</div>
@@ -80,14 +136,14 @@
       </div>
 
       <!-- 2nd, 3rd & 4th Items: Truck Orders -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <!-- First Mile -->
         <div class="card text-center">
           <h2 class="card-header">First Mile (NDP)</h2>
-          <div class="py-4">
+          <div class="py-3">
             <div class="metric-value">{{ dashboardData.first_mile_truck?.total_orders || 0 }}</div>
             <div class="metric-label">Total Orders Today</div>
-            <div class="metric-value mt-4">{{ formatWeight(dashboardData.first_mile_truck?.total_weight || 0) }}</div>
+            <div class="metric-value mt-3">{{ formatWeight(dashboardData.first_mile_truck?.total_weight || 0) }}</div>
             <div class="metric-label">Total Weight (tons)</div>
           </div>
         </div>
@@ -120,9 +176,9 @@
         <h2 class="card-header">Stockpile Utilization</h2>
         
         <!-- ICAD Stockpiles -->
-        <div class="mb-8">
-          <h3 class="text-xl font-semibold text-brand-gray mb-4">ICAD Terminal</h3>
-          <div v-if="getFilteredStockpiles(dashboardData.stockpiles?.ICAD).length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="mb-6">
+          <h3 class="text-xl font-semibold text-brand-gray mb-3">ICAD Terminal</h3>
+          <div v-if="getFilteredStockpiles(dashboardData.stockpiles?.ICAD).length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
             <StockpileBar v-for="stockpile in getFilteredStockpiles(dashboardData.stockpiles?.ICAD)" :key="stockpile.name" :stockpile="stockpile" :rounding="rounding" />
           </div>
           <p v-else class="text-gray-500">No stockpile data available for ICAD terminal.</p>
@@ -130,8 +186,8 @@
 
         <!-- DIC Stockpiles -->
         <div>
-          <h3 class="text-xl font-semibold text-brand-gray mb-4">DIC Terminal</h3>
-          <div v-if="getFilteredStockpiles(dashboardData.stockpiles?.DIC).length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <h3 class="text-xl font-semibold text-brand-gray mb-3">DIC Terminal</h3>
+          <div v-if="getFilteredStockpiles(dashboardData.stockpiles?.DIC).length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
             <StockpileBar v-for="stockpile in getFilteredStockpiles(dashboardData.stockpiles?.DIC)" :key="stockpile.name" :stockpile="stockpile" :rounding="rounding" />
           </div>
           <p v-else class="text-gray-500">No stockpile data available for DIC terminal.</p>
@@ -140,7 +196,7 @@
     </div>
 
     <!-- Refresh Controls -->
-    <div class="flex justify-center items-center space-x-4 pt-6 border-t border-gray-200 mt-10">
+    <div class="flex justify-center items-center space-x-4 pt-4 border-t border-gray-200 mt-6">
       <button 
         @click="loadDashboardData" 
         :disabled="loading"
@@ -165,14 +221,15 @@
         Logout
       </button>
     </div>
-  </div>
+    </div> <!-- End dashboard content -->
+  </div> <!-- End main container -->
 </template>
 
 <script>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
-import { authService } from '../services/auth'
 import StockpileBar from '../components/StockpileBar.vue'
 import DepartureDotPlot from '../components/DepartureDotPlot.vue'
 
@@ -190,11 +247,34 @@ export default {
   },
   setup(props) {
     const router = useRouter()
+    const authStore = useAuthStore()
     const loading = ref(false)
     const error = ref(null)
     const dashboardData = ref({})
     const autoRefresh = ref(false)
+    const showAdminMenu = ref(false)
     let refreshInterval = null
+
+    const user = computed(() => authStore.user)
+
+    const logout = () => {
+      authStore.logout()
+      router.push('/login')
+    }
+
+    const getRoleClass = (role) => {
+      const classes = {
+        admin: 'bg-red-100 text-red-800',
+        operator: 'bg-orange-100 text-orange-800',
+        executive: 'bg-green-100 text-green-800',
+        visitor: 'bg-gray-100 text-gray-800'
+      }
+      return classes[role] || 'bg-gray-100 text-gray-800'
+    }
+
+    const formatRole = (role) => {
+      return role ? role.charAt(0).toUpperCase() + role.slice(1) : ''
+    }
 
     const formatDate = (dateString) => {
       const date = new Date(dateString)
@@ -310,8 +390,7 @@ export default {
     }
 
     const handleLogout = () => {
-      authService.logout()
-      router.push('/login')
+      logout()
     }
 
     onMounted(() => {
@@ -329,6 +408,9 @@ export default {
       error,
       dashboardData,
       autoRefresh,
+      showAdminMenu,
+      user,
+      authStore,
       formatDate,
       formatFullDate,
       formatWeight,
@@ -338,6 +420,9 @@ export default {
       getLast14Days,
       loadDashboardData,
       toggleAutoRefresh,
+      logout,
+      getRoleClass,
+      formatRole,
       handleLogout
     }
   }

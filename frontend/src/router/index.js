@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Dashboard from '../views/Dashboard.vue'
 import Login from '../views/Login.vue'
-import { authService } from '../services/auth'
+import UserManagement from '../components/UserManagement.vue'
+import { useAuthStore } from '../stores/auth'
 
 const routes = [
   {
@@ -15,6 +16,12 @@ const routes = [
     name: 'Dashboard',
     component: Dashboard,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/users',
+    name: 'UserManagement',
+    component: UserManagement,
+    meta: { requiresAuth: true, requiresAdmin: true }
   }
 ]
 
@@ -25,11 +32,13 @@ const router = createRouter({
 
 // Navigation guards
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = authService.isAuthenticated()
+  const authStore = useAuthStore()
   
-  if (to.meta.requiresAuth && !isAuthenticated) {
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/login')
-  } else if (to.meta.requiresGuest && isAuthenticated) {
+  } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
+    next('/')
+  } else if (to.meta.requiresAdmin && !authStore.isAdmin) {
     next('/')
   } else {
     next()
