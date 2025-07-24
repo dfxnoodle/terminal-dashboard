@@ -93,15 +93,19 @@ class OdooAPI:
         return last_14_days_start, current_week_start
     
     def get_today_range(self):
-        """Get start and end of today in UAE timezone"""
+        """Get start and end of today in UAE timezone, converted to UTC for Odoo queries"""
         # Get current time in UAE timezone
         now_uae = datetime.now(self.uae_tz)
         today = now_uae.date()
         
-        start_of_day = datetime.combine(today, datetime.min.time()).replace(tzinfo=self.uae_tz)
-        end_of_day = datetime.combine(today, datetime.max.time()).replace(tzinfo=self.uae_tz)
+        start_of_day_uae = datetime.combine(today, datetime.min.time()).replace(tzinfo=self.uae_tz)
+        end_of_day_uae = datetime.combine(today, datetime.max.time()).replace(tzinfo=self.uae_tz)
         
-        return start_of_day, end_of_day
+        # Convert to UTC for Odoo queries (Odoo stores times in UTC)
+        start_of_day_utc = start_of_day_uae.astimezone(timezone.utc)
+        end_of_day_utc = end_of_day_uae.astimezone(timezone.utc)
+        
+        return start_of_day_utc, end_of_day_utc
     
     def get_forwarding_orders_train_data(self):
         """1st Item: Forwarding orders with train departure this week and last week"""
@@ -111,10 +115,15 @@ class OdooAPI:
         now_uae = datetime.now(self.uae_tz)
         fourteen_days_ago = now_uae - timedelta(days=14)
         
+        # Convert to UTC for Odoo queries (Odoo stores times in UTC)
+        fourteen_days_ago_utc = fourteen_days_ago.astimezone(timezone.utc)
+        current_week_start_utc = current_week_start.astimezone(timezone.utc)
+        now_utc = now_uae.astimezone(timezone.utc)
+        
         # Format dates for Odoo - use 14 days ago instead of just 2 weeks
-        last_14_days_str = fourteen_days_ago.strftime('%Y-%m-%d %H:%M:%S')
-        current_week_str = current_week_start.strftime('%Y-%m-%d %H:%M:%S')
-        now_str = now_uae.strftime('%Y-%m-%d %H:%M:%S')
+        last_14_days_str = fourteen_days_ago_utc.strftime('%Y-%m-%d %H:%M:%S')
+        current_week_str = current_week_start_utc.strftime('%Y-%m-%d %H:%M:%S')
+        now_str = now_utc.strftime('%Y-%m-%d %H:%M:%S')
         
         domain = [
             ['x_studio_selection_field_83c_1ig067df9', 'in', ['NDP Train Departed', 'Train Arrived at Destination']],
