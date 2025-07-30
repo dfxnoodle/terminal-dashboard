@@ -56,6 +56,48 @@
 
     <!-- Dashboard Content -->
     <div class="p-2 md:p-4 space-y-4">
+    <!-- Token Expiration Warning -->
+    <div v-if="apiService.isCurrentTokenExpiring() && !authStore.refreshing" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md shadow-md">
+      <div class="flex">
+        <div class="py-1">
+          <svg class="h-6 w-6 text-yellow-500 mr-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L4.316 15.5c-.77.833.192 2.5 1.732 2.5z"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="font-bold">Session Expiring Soon</p>
+          <p class="text-sm">Your session will expire soon. The system will attempt to refresh automatically, or you can refresh manually.</p>
+          <button 
+            @click="handleTokenRefresh" 
+            class="mt-2 mr-2 bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-300"
+          >
+            Refresh Session
+          </button>
+          <button 
+            @click="window.location.reload()" 
+            class="mt-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-300"
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Token Refreshing State -->
+    <div v-if="authStore.refreshing" class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded-md shadow-md">
+      <div class="flex">
+        <div class="py-1">
+          <svg class="animate-spin h-6 w-6 text-blue-500 mr-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="font-bold">Refreshing Session</p>
+          <p class="text-sm">Please wait while we refresh your authentication session...</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Loading State -->
     <div v-if="loading" class="flex justify-center items-center py-20">
       <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-brand-red"></div>
@@ -370,6 +412,12 @@ export default {
         const response = await apiService.getDashboardData()
         dashboardData.value = response.data
       } catch (err) {
+        // If it's an auth error during auto-refresh, don't show error state
+        if (err.response?.status === 401) {
+          console.log('Authentication error during data refresh - user will be redirected to login')
+          return
+        }
+        
         error.value = err.message || 'An unknown error occurred.'
         console.error('Failed to load dashboard data:', err)
       } finally {
@@ -380,8 +428,27 @@ export default {
     const toggleAutoRefresh = () => {
       autoRefresh.value = !autoRefresh.value
       if (autoRefresh.value) {
-        // Refresh every 60 seconds
-        refreshInterval = setInterval(loadDashboardData, 60000)
+        // Check if token is about to expire before starting auto-refresh
+        if (apiService.isCurrentTokenExpiring()) {
+          autoRefresh.value = false
+          alert('Cannot enable auto-refresh: Your session is about to expire. Please refresh the page to continue.')
+          return
+        }
+        
+        // Refresh every 60 seconds (but tokens expire after 30 minutes)
+        refreshInterval = setInterval(() => {
+          // Don't refresh if already loading to avoid conflicts
+          if (!loading.value) {
+            // Check token expiration before each refresh
+            if (apiService.isCurrentTokenExpiring()) {
+              console.log('Token expiring soon, disabling auto-refresh')
+              autoRefresh.value = false
+              clearInterval(refreshInterval)
+              return
+            }
+            loadDashboardData()
+          }
+        }, 60000)
       } else {
         if (refreshInterval) {
           clearInterval(refreshInterval)
@@ -393,7 +460,26 @@ export default {
       logout()
     }
 
+    const handleTokenRefresh = async () => {
+      try {
+        const refreshed = await authStore.refreshToken()
+        if (refreshed) {
+          console.log('Token refreshed successfully')
+          // Optionally reload dashboard data after refresh
+          loadDashboardData()
+        } else {
+          console.log('Token refresh failed')
+        }
+      } catch (error) {
+        console.error('Manual token refresh failed:', error)
+      }
+    }
+
     onMounted(() => {
+      // Check token validity on mount
+      if (apiService.isCurrentTokenExpiring()) {
+        console.log('Token is expiring, showing warning')
+      }
       loadDashboardData()
     })
 
@@ -411,6 +497,7 @@ export default {
       showAdminMenu,
       user,
       authStore,
+      apiService,
       formatDate,
       formatFullDate,
       formatWeight,
@@ -423,7 +510,8 @@ export default {
       logout,
       getRoleClass,
       formatRole,
-      handleLogout
+      handleLogout,
+      handleTokenRefresh
     }
   }
 }

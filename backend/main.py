@@ -384,6 +384,29 @@ async def get_profile(current_user: User = Depends(get_current_active_user)):
     """Get current user profile"""
     return UserResponse.model_validate(current_user)
 
+@app.post("/api/auth/refresh-token", response_model=LoginResponse)
+async def refresh_token(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    """Refresh the current user's token"""
+    try:
+        # Create a new access token
+        access_token_expires = timedelta(minutes=auth_service.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = auth_service.create_access_token(
+            data={"sub": current_user.username, "role": current_user.role.value},
+            expires_delta=access_token_expires
+        )
+        
+        logger.info(f"Token refreshed for user: {current_user.username}")
+        return LoginResponse(
+            success=True,
+            message="Token refreshed successfully",
+            token=access_token,
+            user=UserResponse.model_validate(current_user)
+        )
+    
+    except Exception as e:
+        logger.error(f"Token refresh error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 @app.post("/api/auth/change-password", response_model=MessageResponse)
 async def change_password(
     request: ChangePasswordRequest,
