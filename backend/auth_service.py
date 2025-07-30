@@ -43,10 +43,11 @@ class AuthService:
         encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
         return encoded_jwt
     
-    def verify_token(self, token: str) -> Optional[Dict[str, Any]]:
+    def verify_token(self, token: str, verify_expiration: bool = True) -> Optional[Dict[str, Any]]:
         """Verify JWT token and return payload"""
         try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            options = {"verify_exp": verify_expiration}
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options=options)
             username: str = payload.get("sub")
             if username is None:
                 return None

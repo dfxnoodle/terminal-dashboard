@@ -145,11 +145,11 @@
           </div>
           <div class="text-center border-r border-gray-200">
             <div class="metric-value text-red-600">{{ getAverageStockpileAge('ICAD') }}</div>
-            <div class="metric-label">ICAD Avg Age (hrs)</div>
+            <div class="metric-label">ICAD Stock Hrs</div>
           </div>
           <div class="text-center">
             <div class="metric-value text-amber-600">{{ getAverageStockpileAge('DIC') }}</div>
-            <div class="metric-label">DIC Avg Age (hrs)</div>
+            <div class="metric-label">DIC Stock Hrs</div>
           </div>
         </div>
         

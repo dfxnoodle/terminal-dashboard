@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from typing import Dict, Any, List
 import logging
@@ -19,7 +20,7 @@ from auth_models import (
 )
 from auth_dependencies import (
     get_current_user, get_current_active_user, require_admin, 
-    require_operator, require_executive, require_visitor
+    require_operator, require_executive, require_visitor, security
 )
 
 # Configure logging
@@ -385,24 +386,54 @@ async def get_profile(current_user: User = Depends(get_current_active_user)):
     return UserResponse.model_validate(current_user)
 
 @app.post("/api/auth/refresh-token", response_model=LoginResponse)
-async def refresh_token(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    """Refresh the current user's token"""
+async def refresh_token(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db)
+):
+    """Refresh the current user's token - can handle expired tokens"""
     try:
+        if not credentials:
+            raise HTTPException(status_code=401, detail="No token provided")
+        
+        # Try to decode the token, even if expired
+        try:
+            payload = auth_service.verify_token(credentials.credentials, verify_expiration=False)
+        except:
+            # If token is completely invalid (not just expired), return error
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
+        if payload is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
+        # Get user from database
+        user = await auth_service.get_user_by_username(db, username)
+        if user is None:
+            raise HTTPException(status_code=401, detail="User not found")
+        
+        if not user.is_active:
+            raise HTTPException(status_code=401, detail="Inactive user")
+        
         # Create a new access token
         access_token_expires = timedelta(minutes=auth_service.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = auth_service.create_access_token(
-            data={"sub": current_user.username, "role": current_user.role.value},
+            data={"sub": user.username, "role": user.role.value},
             expires_delta=access_token_expires
         )
         
-        logger.info(f"Token refreshed for user: {current_user.username}")
+        logger.info(f"Token refreshed for user: {user.username}")
         return LoginResponse(
             success=True,
             message="Token refreshed successfully",
             token=access_token,
-            user=UserResponse.model_validate(current_user)
+            user=UserResponse.model_validate(user)
         )
     
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Token refresh error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
