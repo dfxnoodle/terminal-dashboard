@@ -132,7 +132,7 @@
         <h2 class="card-header">Train Departures</h2>
         
         <!-- Train Counts -->
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 py-3 border-b border-gray-200">
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-4 py-3 border-b border-gray-200">
           <div class="text-center border-r border-gray-200">
             <div class="metric-value text-brand-gray">{{ dashboardData.forwarding_orders?.last_week_count || 0 }}</div>
             <div class="metric-label">Last Week Orders</div>
@@ -140,6 +140,10 @@
           <div class="text-center border-r border-gray-200">
             <div class="metric-value text-brand-red">{{ dashboardData.forwarding_orders?.current_week_count || 0 }}</div>
             <div class="metric-label">This Week Orders</div>
+          </div>
+          <div class="text-center border-r border-gray-200">
+            <div class="metric-value text-purple-600">{{ dashboardData.forwarding_orders?.yesterday_count || 0 }}</div>
+            <div class="metric-label">Yesterday Orders</div>
           </div>
           <div class="text-center border-r border-gray-200">
             <div class="metric-value text-green-600">{{ dashboardData.forwarding_orders?.today_count || 0 }}</div>
@@ -156,18 +160,22 @@
         </div>
         
         <!-- Train Weights -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 py-3">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 py-3">
           <div class="text-center">
-            <div class="metric-value text-gray-600">{{ formatWeight(dashboardData.forwarding_orders?.last_week_weight || 0) }}</div>
-            <div class="metric-label">Last Week Weight (tons)</div>
+            <div class="metric-value text-gray-600">{{ getAverageWeightForPeriod('last_week') }}</div>
+            <div class="metric-label">Last Week Avg (tons)</div>
           </div>          
           <div class="text-center">
-            <div class="metric-value text-blue-600">{{ formatWeight(dashboardData.forwarding_orders?.current_week_weight || 0) }}</div>
-            <div class="metric-label">This Week Weight (tons)</div>
+            <div class="metric-value text-blue-600">{{ getAverageWeightForPeriod('current_week') }}</div>
+            <div class="metric-label">This Week Avg (tons)</div>
           </div>
           <div class="text-center">
-            <div class="metric-value text-green-600">{{ formatWeight(dashboardData.forwarding_orders?.today_weight || 0) }}</div>
-            <div class="metric-label">Today Weight (tons)</div>
+            <div class="metric-value text-purple-600">{{ getAverageWeightForPeriod('yesterday') }}</div>
+            <div class="metric-label">Yesterday Avg (tons)</div>
+          </div>
+          <div class="text-center">
+            <div class="metric-value text-green-600">{{ getAverageWeightForPeriod('today') }}</div>
+            <div class="metric-label">Today Avg (tons)</div>
           </div>
         </div>
         
@@ -414,6 +422,38 @@ export default {
       return formatWeight(average)
     }
 
+    const getAverageWeightForPeriod = (period) => {
+      const fwoData = dashboardData.value.forwarding_orders
+      if (!fwoData) return 'N/A'
+
+      let count = 0
+      let weight = 0
+
+      switch (period) {
+        case 'last_week':
+          count = fwoData.last_week_count || 0
+          weight = fwoData.last_week_weight || 0
+          break
+        case 'current_week':
+          count = fwoData.current_week_count || 0
+          weight = fwoData.current_week_weight || 0
+          break
+        case 'yesterday':
+          count = fwoData.yesterday_count || 0
+          weight = fwoData.yesterday_weight || 0
+          break
+        case 'today':
+          count = fwoData.today_count || 0
+          weight = fwoData.today_weight || 0
+          break
+        default:
+          return 'N/A'
+      }
+
+      if (count === 0) return 'N/A'
+      return formatWeight(weight / count)
+    }
+
     const getTodayCount = () => {
       // Use the today_count from backend if available, otherwise fall back to daily_counts
       if (dashboardData.value.forwarding_orders?.today_count !== undefined) {
@@ -582,6 +622,7 @@ export default {
       formatFullDate,
       formatWeight,
       getAverageWeight,
+      getAverageWeightForPeriod,
       getTodayCount,
       getFilteredStockpiles,
       getAverageStockpileAge,

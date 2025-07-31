@@ -265,13 +265,15 @@ class OdooAPI:
         current_week_orders = []
         last_week_orders = []
         today_orders = []
+        yesterday_orders = []
         daily_counts = {}
         
         # Calculate last week start (Monday of previous week)
         last_week_start = current_week_start - timedelta(weeks=1)
         
-        # Get today's date for filtering today's orders
+        # Get today's date and yesterday's date for filtering
         today_date = now_uae.date()
+        yesterday_date = today_date - timedelta(days=1)
         
         for order in orders:
             departure_str = order['x_studio_actual_train_departure']
@@ -283,6 +285,9 @@ class OdooAPI:
                 # Check if this order is from today
                 if departure_dt.date() == today_date:
                     today_orders.append(order)
+                # Check if this order is from yesterday
+                elif departure_dt.date() == yesterday_date:
+                    yesterday_orders.append(order)
                 
                 # Determine week - only count orders within specific week ranges
                 if departure_dt >= current_week_start:
@@ -300,18 +305,22 @@ class OdooAPI:
         current_week_weight = sum(order.get('x_studio_total_weight_tons', 0) for order in current_week_orders)
         last_week_weight = sum(order.get('x_studio_total_weight_tons', 0) for order in last_week_orders)
         today_weight = sum(order.get('x_studio_total_weight_tons', 0) for order in today_orders)
+        yesterday_weight = sum(order.get('x_studio_total_weight_tons', 0) for order in yesterday_orders)
         
         return {
             'current_week_count': len(current_week_orders),
             'last_week_count': len(last_week_orders),
             'today_count': len(today_orders),
+            'yesterday_count': len(yesterday_orders),
             'current_week_weight': current_week_weight,
             'last_week_weight': last_week_weight,
             'today_weight': today_weight,
+            'yesterday_weight': yesterday_weight,
             'daily_counts': daily_counts,
             'current_week_orders': current_week_orders,
             'last_week_orders': last_week_orders,
             'today_orders': today_orders,
+            'yesterday_orders': yesterday_orders,
             'orders': orders  # Add the raw orders list here
         }
     
