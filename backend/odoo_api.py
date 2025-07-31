@@ -107,6 +107,121 @@ class OdooAPI:
         
         return start_of_day_utc, end_of_day_utc
     
+    def _enrich_orders_with_weight_data(self, orders):
+        """Enrich forwarding orders with weight data from freight orders"""
+        try:
+            # Get all first mile freight orders for weight data
+            # We'll try to match by train ID or forwarding order reference
+            
+            # First, collect all train IDs and order names from forwarding orders
+            train_ids = set()
+            order_names = set()
+            
+            for order in orders:
+                if order.get('x_studio_train_id'):
+                    train_ids.add(order['x_studio_train_id'])
+                if order.get('x_name'):
+                    order_names.add(order['x_name'])
+            
+            if not train_ids and not order_names:
+                logger.warning("No train IDs or order names found to match freight data")
+                return
+            
+            # Get freight orders that might be related
+            # We'll search for freight orders with matching train IDs or forwarding order references
+            freight_domain = []
+            
+            # Try to find freight orders by forwarding order reference
+            if order_names:
+                freight_domain.append(['x_studio_forwarding_order', 'in', list(order_names)])
+            
+            if not freight_domain:
+                # If we can't match by forwarding order, get recent freight data
+                # and try to match by time proximity and train ID
+                now_uae = datetime.now(self.uae_tz)
+                thirty_days_ago = now_uae - timedelta(days=30)
+                thirty_days_ago_utc = thirty_days_ago.astimezone(timezone.utc)
+                freight_domain = [
+                    ['x_studio_actual_date_and_time_of_gate_out', '>=', thirty_days_ago_utc.strftime('%Y-%m-%d %H:%M:%S')]
+                ]
+            
+            if freight_domain:
+                freight_orders = self.execute_kw(
+                    'x_first_mile_freight', 'search_read',
+                    [freight_domain],
+                    {'fields': [
+                        'x_studio_net_weight_ton',
+                        'x_studio_forwarding_order',
+                        'x_studio_forwarding_order_selectable',
+                        'x_studio_actual_date_and_time_of_gate_out',
+                        'x_name'
+                    ]}
+                )
+                
+                # Create lookup dictionaries
+                weight_by_fwo_name = {}
+                weight_by_train_time = {}  # For time-based matching if direct matching fails
+                
+                for freight in freight_orders:
+                    weight = freight.get('x_studio_net_weight_ton', 0)
+                    if weight > 0:
+                        # Direct match by forwarding order name
+                        fwo_ref = freight.get('x_studio_forwarding_order')
+                        if fwo_ref:
+                            if fwo_ref not in weight_by_fwo_name:
+                                weight_by_fwo_name[fwo_ref] = 0
+                            weight_by_fwo_name[fwo_ref] += weight
+                        
+                        # Store for potential time-based matching
+                        gate_out_time = freight.get('x_studio_actual_date_and_time_of_gate_out')
+                        if gate_out_time:
+                            weight_by_train_time[gate_out_time] = weight_by_train_time.get(gate_out_time, 0) + weight
+                
+                # Enrich the forwarding orders with weight data
+                for order in orders:
+                    order['x_studio_total_weight_tons'] = 0  # Default value
+                    
+                    # Try direct match first
+                    order_name = order.get('x_name')
+                    if order_name and order_name in weight_by_fwo_name:
+                        order['x_studio_total_weight_tons'] = weight_by_fwo_name[order_name]
+                        logger.debug(f"Matched weight {order['x_studio_total_weight_tons']} tons for order {order_name}")
+                    else:
+                        # Try time-based matching as fallback
+                        # This is more complex and might not be as accurate
+                        departure_time = order.get('x_studio_actual_train_departure')
+                        if departure_time and weight_by_train_time:
+                            # Find closest freight gate-out time (within reasonable window)
+                            departure_dt = datetime.strptime(departure_time, '%Y-%m-%d %H:%M:%S')
+                            
+                            closest_weight = 0
+                            min_time_diff = float('inf')
+                            
+                            for gate_out_time, weight in weight_by_train_time.items():
+                                try:
+                                    gate_out_dt = datetime.strptime(gate_out_time, '%Y-%m-%d %H:%M:%S')
+                                    time_diff = abs((departure_dt - gate_out_dt).total_seconds())
+                                    
+                                    # Only consider matches within 24 hours
+                                    if time_diff < 24 * 3600 and time_diff < min_time_diff:
+                                        min_time_diff = time_diff
+                                        closest_weight = weight
+                                except:
+                                    continue
+                            
+                            if closest_weight > 0:
+                                order['x_studio_total_weight_tons'] = closest_weight
+                                logger.debug(f"Time-matched weight {closest_weight} tons for order {order_name} (time diff: {min_time_diff/3600:.1f} hours)")
+                
+                logger.info(f"Enriched {len(orders)} orders with weight data. Found weights for {len([o for o in orders if o.get('x_studio_total_weight_tons', 0) > 0])} orders")
+                
+        except Exception as e:
+            logger.error(f"Error enriching orders with weight data: {e}")
+            # Add default weight field to all orders even if enrichment fails
+            for order in orders:
+                if 'x_studio_total_weight_tons' not in order:
+                    order['x_studio_total_weight_tons'] = 0
+    
     def get_forwarding_orders_train_data(self):
         """1st Item: Forwarding orders with train departure this week and last week"""
         last_14_days_start, current_week_start = self.get_date_ranges()
@@ -143,13 +258,20 @@ class OdooAPI:
             ]}
         )
         
+        # Enrich orders with weight data from freight
+        self._enrich_orders_with_weight_data(orders)
+        
         # Group by week and day
         current_week_orders = []
         last_week_orders = []
+        today_orders = []
         daily_counts = {}
         
         # Calculate last week start (Monday of previous week)
         last_week_start = current_week_start - timedelta(weeks=1)
+        
+        # Get today's date for filtering today's orders
+        today_date = now_uae.date()
         
         for order in orders:
             departure_str = order['x_studio_actual_train_departure']
@@ -157,6 +279,10 @@ class OdooAPI:
                 # Parse datetime and assume it's in UAE timezone
                 departure_dt = datetime.strptime(departure_str, '%Y-%m-%d %H:%M:%S')
                 departure_dt = departure_dt.replace(tzinfo=self.uae_tz)
+                
+                # Check if this order is from today
+                if departure_dt.date() == today_date:
+                    today_orders.append(order)
                 
                 # Determine week - only count orders within specific week ranges
                 if departure_dt >= current_week_start:
@@ -170,66 +296,182 @@ class OdooAPI:
                 day_key = departure_dt.strftime('%Y-%m-%d')
                 daily_counts[day_key] = daily_counts.get(day_key, 0) + 1
         
+        # Calculate weight totals
+        current_week_weight = sum(order.get('x_studio_total_weight_tons', 0) for order in current_week_orders)
+        last_week_weight = sum(order.get('x_studio_total_weight_tons', 0) for order in last_week_orders)
+        today_weight = sum(order.get('x_studio_total_weight_tons', 0) for order in today_orders)
+        
         return {
             'current_week_count': len(current_week_orders),
             'last_week_count': len(last_week_orders),
+            'today_count': len(today_orders),
+            'current_week_weight': current_week_weight,
+            'last_week_weight': last_week_weight,
+            'today_weight': today_weight,
             'daily_counts': daily_counts,
             'current_week_orders': current_week_orders,
             'last_week_orders': last_week_orders,
+            'today_orders': today_orders,
             'orders': orders  # Add the raw orders list here
         }
     
-    def get_first_mile_truck_data(self):
-        """2nd Item: First mile truck orders at NDP terminal today"""
-        start_of_day, end_of_day = self.get_today_range()
+    def get_first_mile_truck_data(self, target_date: Optional[datetime.date] = None):
+        """2nd Item: First mile truck orders at NDP terminal today and yesterday"""
+        # If no date provided, use today
+        if target_date is None:
+            start_of_today, end_of_today = self.get_today_range()
+        else:
+            # Use the provided date
+            now_uae = datetime.now(self.uae_tz)
+            start_of_day_uae = datetime.combine(target_date, datetime.min.time()).replace(tzinfo=self.uae_tz)
+            end_of_day_uae = datetime.combine(target_date, datetime.max.time()).replace(tzinfo=self.uae_tz)
+            
+            # Convert to UTC for Odoo queries
+            start_of_today = start_of_day_uae.astimezone(timezone.utc)
+            end_of_today = end_of_day_uae.astimezone(timezone.utc)
         
-        domain = [
+        # Get yesterday's range (relative to target date)
+        if target_date is None:
+            now_uae = datetime.now(self.uae_tz)
+            yesterday = now_uae - timedelta(days=1)
+        else:
+            yesterday_date_obj = target_date - timedelta(days=1)
+            yesterday = datetime.combine(yesterday_date_obj, datetime.min.time()).replace(tzinfo=self.uae_tz)
+        
+        yesterday_date = yesterday.date() if target_date is None else target_date - timedelta(days=1)
+        
+        start_of_yesterday_uae = datetime.combine(yesterday_date, datetime.min.time()).replace(tzinfo=self.uae_tz)
+        end_of_yesterday_uae = datetime.combine(yesterday_date, datetime.max.time()).replace(tzinfo=self.uae_tz)
+        
+        # Convert to UTC for Odoo queries
+        start_of_yesterday_utc = start_of_yesterday_uae.astimezone(timezone.utc)
+        end_of_yesterday_utc = end_of_yesterday_uae.astimezone(timezone.utc)
+        
+        # Get today's orders
+        today_domain = [
             ['x_studio_terminal', '=', 'NDP'],
             ['x_studio_selection_field_1d4_1icdknqu2', 'in', ['Gate-out Completed', 'Train Departed', 'Exception']],
-            ['x_studio_actual_date_and_time_of_gate_out', '>=', start_of_day.strftime('%Y-%m-%d %H:%M:%S')],
-            ['x_studio_actual_date_and_time_of_gate_out', '<=', end_of_day.strftime('%Y-%m-%d %H:%M:%S')]
+            ['x_studio_actual_date_and_time_of_gate_out', '>=', start_of_today.strftime('%Y-%m-%d %H:%M:%S')],
+            ['x_studio_actual_date_and_time_of_gate_out', '<=', end_of_today.strftime('%Y-%m-%d %H:%M:%S')]
         ]
         
-        orders = self.execute_kw(
+        today_orders = self.execute_kw(
             'x_first_mile_freight', 'search_read',
-            [domain],
+            [today_domain],
             {'fields': ['x_studio_net_weight_ton', 'x_studio_actual_date_and_time_of_gate_out', 'x_studio_selection_field_1d4_1icdknqu2']}
         )
         
-        total_orders = len(orders)
-        total_weight = sum(order.get('x_studio_net_weight_ton', 0) for order in orders)
-        
-        return {
-            'total_orders': total_orders,
-            'total_weight': total_weight,
-            'orders': orders
-        }
-    
-    def get_last_mile_truck_data(self, terminal: str):
-        """3rd & 4th Item: Last mile truck orders at ICAD/DIC terminal today"""
-        start_of_day, end_of_day = self.get_today_range()
-        
-        domain = [
-            ['x_studio_terminal', '=', terminal],
-            ['x_studio_selection_field_Vik7G', 'in', ['Gate-out Completed', 'Order Completed and Closed']],
-            ['x_studio_actual_date_and_time_of_gate_out', '>=', start_of_day.strftime('%Y-%m-%d %H:%M:%S')],
-            ['x_studio_actual_date_and_time_of_gate_out', '<=', end_of_day.strftime('%Y-%m-%d %H:%M:%S')]
+        # Get yesterday's orders
+        yesterday_domain = [
+            ['x_studio_terminal', '=', 'NDP'],
+            ['x_studio_selection_field_1d4_1icdknqu2', 'in', ['Gate-out Completed', 'Train Departed', 'Exception']],
+            ['x_studio_actual_date_and_time_of_gate_out', '>=', start_of_yesterday_utc.strftime('%Y-%m-%d %H:%M:%S')],
+            ['x_studio_actual_date_and_time_of_gate_out', '<=', end_of_yesterday_utc.strftime('%Y-%m-%d %H:%M:%S')]
         ]
         
-        orders = self.execute_kw(
+        yesterday_orders = self.execute_kw(
+            'x_first_mile_freight', 'search_read',
+            [yesterday_domain],
+            {'fields': ['x_studio_net_weight_ton', 'x_studio_actual_date_and_time_of_gate_out', 'x_studio_selection_field_1d4_1icdknqu2']}
+        )
+        
+        # Calculate totals for today
+        total_orders_today = len(today_orders)
+        total_weight_today = sum(order.get('x_studio_net_weight_ton', 0) for order in today_orders)
+        
+        # Calculate totals for yesterday
+        total_orders_yesterday = len(yesterday_orders)
+        total_weight_yesterday = sum(order.get('x_studio_net_weight_ton', 0) for order in yesterday_orders)
+        
+        return {
+            'total_orders': total_orders_today,
+            'total_weight': total_weight_today,
+            'orders': today_orders,
+            'yesterday': {
+                'total_orders': total_orders_yesterday,
+                'total_weight': total_weight_yesterday,
+                'orders': yesterday_orders
+            }
+        }
+    
+    def get_last_mile_truck_data(self, terminal: str, target_date: Optional[datetime.date] = None):
+        """3rd & 4th Item: Last mile truck orders at ICAD/DIC terminal today and yesterday"""
+        # If no date provided, use today
+        if target_date is None:
+            start_of_today, end_of_today = self.get_today_range()
+        else:
+            # Use the provided date
+            now_uae = datetime.now(self.uae_tz)
+            start_of_day_uae = datetime.combine(target_date, datetime.min.time()).replace(tzinfo=self.uae_tz)
+            end_of_day_uae = datetime.combine(target_date, datetime.max.time()).replace(tzinfo=self.uae_tz)
+            
+            # Convert to UTC for Odoo queries
+            start_of_today = start_of_day_uae.astimezone(timezone.utc)
+            end_of_today = end_of_day_uae.astimezone(timezone.utc)
+        
+        # Get yesterday's range (relative to target date)
+        if target_date is None:
+            now_uae = datetime.now(self.uae_tz)
+            yesterday = now_uae - timedelta(days=1)
+        else:
+            yesterday_date_obj = target_date - timedelta(days=1)
+            yesterday = datetime.combine(yesterday_date_obj, datetime.min.time()).replace(tzinfo=self.uae_tz)
+        
+        yesterday_date = yesterday.date() if target_date is None else target_date - timedelta(days=1)
+        
+        start_of_yesterday_uae = datetime.combine(yesterday_date, datetime.min.time()).replace(tzinfo=self.uae_tz)
+        end_of_yesterday_uae = datetime.combine(yesterday_date, datetime.max.time()).replace(tzinfo=self.uae_tz)
+        
+        # Convert to UTC for Odoo queries
+        start_of_yesterday_utc = start_of_yesterday_uae.astimezone(timezone.utc)
+        end_of_yesterday_utc = end_of_yesterday_uae.astimezone(timezone.utc)
+        
+        # Get today's orders
+        today_domain = [
+            ['x_studio_terminal', '=', terminal],
+            ['x_studio_selection_field_Vik7G', 'in', ['Gate-out Completed', 'Order Completed and Closed']],
+            ['x_studio_actual_date_and_time_of_gate_out', '>=', start_of_today.strftime('%Y-%m-%d %H:%M:%S')],
+            ['x_studio_actual_date_and_time_of_gate_out', '<=', end_of_today.strftime('%Y-%m-%d %H:%M:%S')]
+        ]
+        
+        today_orders = self.execute_kw(
             'x_last_mile_freight', 'search_read',
-            [domain],
+            [today_domain],
             {'fields': ['x_studio_net_weight_ton', 'x_studio_actual_date_and_time_of_gate_out', 'x_studio_selection_field_Vik7G']}
         )
         
-        total_orders = len(orders)
-        total_weight = sum(order.get('x_studio_net_weight_ton', 0) for order in orders)
+        # Get yesterday's orders
+        yesterday_domain = [
+            ['x_studio_terminal', '=', terminal],
+            ['x_studio_selection_field_Vik7G', 'in', ['Gate-out Completed', 'Order Completed and Closed']],
+            ['x_studio_actual_date_and_time_of_gate_out', '>=', start_of_yesterday_utc.strftime('%Y-%m-%d %H:%M:%S')],
+            ['x_studio_actual_date_and_time_of_gate_out', '<=', end_of_yesterday_utc.strftime('%Y-%m-%d %H:%M:%S')]
+        ]
+        
+        yesterday_orders = self.execute_kw(
+            'x_last_mile_freight', 'search_read',
+            [yesterday_domain],
+            {'fields': ['x_studio_net_weight_ton', 'x_studio_actual_date_and_time_of_gate_out', 'x_studio_selection_field_Vik7G']}
+        )
+        
+        # Calculate totals for today
+        total_orders_today = len(today_orders)
+        total_weight_today = sum(order.get('x_studio_net_weight_ton', 0) for order in today_orders)
+        
+        # Calculate totals for yesterday
+        total_orders_yesterday = len(yesterday_orders)
+        total_weight_yesterday = sum(order.get('x_studio_net_weight_ton', 0) for order in yesterday_orders)
         
         return {
-            'total_orders': total_orders,
-            'total_weight': total_weight,
-            'orders': orders,
-            'terminal': terminal
+            'total_orders': total_orders_today,
+            'total_weight': total_weight_today,
+            'orders': today_orders,
+            'terminal': terminal,
+            'yesterday': {
+                'total_orders': total_orders_yesterday,
+                'total_weight': total_weight_yesterday,
+                'orders': yesterday_orders
+            }
         }
     
     def get_stockpile_utilization(self):

@@ -310,6 +310,11 @@ export default {
                     lines.push(`Status: ${order.x_studio_selection_field_83c_1ig067df9}`);
                   }
                   
+                  // Weight information
+                  if (order.x_studio_total_weight_tons && order.x_studio_total_weight_tons > 0) {
+                    lines.push(`Weight: ${order.x_studio_total_weight_tons.toFixed(1)} tons`);
+                  }
+                  
                   return lines;
                 }
               }
