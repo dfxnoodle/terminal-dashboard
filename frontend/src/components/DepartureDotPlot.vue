@@ -68,14 +68,18 @@ export default {
       }
     };
     
-    // Create icons for both destinations
-    let icadTrainIcon = null;
-    let dicTrainIcon = null;
+    // Create icons for all origin-destination combinations
+    let ndpIcadTrainIcon = null;
+    let ndpDicTrainIcon = null;
+    let sijiIcadTrainIcon = null;
+    let sijiDicTrainIcon = null;
     
     // Initialize icons
     const initIcons = async () => {
-      icadTrainIcon = await createColoredTrainIcon('#f02222'); // Red for ICAD
-      dicTrainIcon = await createColoredTrainIcon('#F97316');  // Orange for DIC
+      ndpIcadTrainIcon = await createColoredTrainIcon('#f02222'); // Red for NDP-ICAD
+      ndpDicTrainIcon = await createColoredTrainIcon('#F97316');  // Orange for NDP-DIC
+      sijiIcadTrainIcon = await createColoredTrainIcon('#4B5563'); // Dark Grey for Siji-ICAD
+      sijiDicTrainIcon = await createColoredTrainIcon('#9CA3AF');  // Light Grey for Siji-DIC
       
       // Render chart after icons are ready
       renderChart();
@@ -103,9 +107,11 @@ export default {
       // This places the oldest date at the top of the Y-axis.
       const sortedYLabels = Array.from(yLabels).sort((a, b) => b.localeCompare(a));
 
-      // Separate data points by destination for different styling
-      const icadDataPoints = [];
-      const dicDataPoints = [];
+      // Separate data points by origin-destination combination
+      const ndpIcadDataPoints = [];
+      const ndpDicDataPoints = [];
+      const sijiIcadDataPoints = [];
+      const sijiDicDataPoints = [];
       
       if (orders) {
         // Sort orders by departure time to ensure correct processing
@@ -125,6 +131,8 @@ export default {
               departure: order.x_studio_actual_train_departure,
               parsed: departureDateTime,
               dateStr: dateStr,
+              origin: order.x_studio_origin_terminal,
+              destination: order.x_studio_destination_terminal,
               inRange: yLabels.has(dateStr)
             });
           }
@@ -143,11 +151,18 @@ export default {
               order: order // Keep original order data for tooltips
             };
 
-            // Separate by destination
-            if (order.x_studio_destination_terminal === 'DIC') {
-              dicDataPoints.push(dataPoint);
-            } else {
-              icadDataPoints.push(dataPoint);
+            // Separate by origin-destination combination
+            const origin = order.x_studio_origin_terminal;
+            const destination = order.x_studio_destination_terminal;
+            
+            if (origin === 'NDP' && destination === 'ICAD') {
+              ndpIcadDataPoints.push(dataPoint);
+            } else if (origin === 'NDP' && destination === 'DIC') {
+              ndpDicDataPoints.push(dataPoint);
+            } else if (origin === 'Siji' && destination === 'ICAD') {
+              sijiIcadDataPoints.push(dataPoint);
+            } else if (origin === 'Siji' && destination === 'DIC') {
+              sijiDicDataPoints.push(dataPoint);
             }
           }
         });
@@ -155,36 +170,64 @@ export default {
 
       // Debug: log final data points
       console.log('DepartureDotPlot - Processed data points:', {
-        icadCount: icadDataPoints.length,
-        dicCount: dicDataPoints.length,
-        totalProcessed: icadDataPoints.length + dicDataPoints.length
+        ndpIcadCount: ndpIcadDataPoints.length,
+        ndpDicCount: ndpDicDataPoints.length,
+        sijiIcadCount: sijiIcadDataPoints.length,
+        sijiDicCount: sijiDicDataPoints.length,
+        totalProcessed: ndpIcadDataPoints.length + ndpDicDataPoints.length + sijiIcadDataPoints.length + sijiDicDataPoints.length
       });
 
       const datasets = [];
       
-      // ICAD dataset (red train icons)
-      if (icadDataPoints.length > 0) {
+      // NDP-ICAD dataset (red train icons)
+      if (ndpIcadDataPoints.length > 0) {
         datasets.push({
-          label: 'ICAD',
-          data: icadDataPoints,
-          pointStyle: icadTrainIcon,
+          label: 'NDP → ICAD',
+          data: ndpIcadDataPoints,
+          pointStyle: ndpIcadTrainIcon,
           radius: 12,
           hoverRadius: 16,
-          backgroundColor: '#EF4444', // Red color for ICAD
+          backgroundColor: '#f02222', // Red color for NDP-ICAD
           borderColor: '#DC2626',
         });
       }
       
-      // DIC dataset (orange train icons)
-      if (dicDataPoints.length > 0) {
+      // NDP-DIC dataset (orange train icons)
+      if (ndpDicDataPoints.length > 0) {
         datasets.push({
-          label: 'DIC',
-          data: dicDataPoints,
-          pointStyle: dicTrainIcon,
+          label: 'NDP → DIC',
+          data: ndpDicDataPoints,
+          pointStyle: ndpDicTrainIcon,
           radius: 12,
           hoverRadius: 16,
-          backgroundColor: '#F97316', // Orange color for DIC
+          backgroundColor: '#F97316', // Orange color for NDP-DIC
           borderColor: '#EA580C',
+        });
+      }
+      
+      // Siji-ICAD dataset (dark grey train icons)
+      if (sijiIcadDataPoints.length > 0) {
+        datasets.push({
+          label: 'Siji → ICAD',
+          data: sijiIcadDataPoints,
+          pointStyle: sijiIcadTrainIcon,
+          radius: 12,
+          hoverRadius: 16,
+          backgroundColor: '#4B5563', // Dark Grey color for Siji-ICAD
+          borderColor: '#374151',
+        });
+      }
+      
+      // Siji-DIC dataset (light grey train icons)
+      if (sijiDicDataPoints.length > 0) {
+        datasets.push({
+          label: 'Siji → DIC',
+          data: sijiDicDataPoints,
+          pointStyle: sijiDicTrainIcon,
+          radius: 12,
+          hoverRadius: 16,
+          backgroundColor: '#9CA3AF', // Light Grey color for Siji-DIC
+          borderColor: '#6B7280',
         });
       }
 
@@ -202,7 +245,7 @@ export default {
       const { datasets, labels } = processData(props.orders);
 
       // Don't render if icons aren't ready yet or no labels
-      if (!icadTrainIcon || !dicTrainIcon || !labels || labels.length === 0) {
+      if (!ndpIcadTrainIcon || !ndpDicTrainIcon || !sijiIcadTrainIcon || !sijiDicTrainIcon || !labels || labels.length === 0) {
         return;
       }
 
@@ -300,8 +343,10 @@ export default {
                   // Departure Time
                   lines.push(`Time: ${time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`);
                   
-                  // Destination Terminal
-                  if (order.x_studio_destination_terminal) {
+                  // Origin and Destination Terminals
+                  if (order.x_studio_origin_terminal && order.x_studio_destination_terminal) {
+                    lines.push(`Route: ${order.x_studio_origin_terminal} → ${order.x_studio_destination_terminal}`);
+                  } else if (order.x_studio_destination_terminal) {
                     lines.push(`Destination: ${order.x_studio_destination_terminal}`);
                   }
                   
@@ -393,7 +438,7 @@ export default {
 
     watch(() => props.orders, () => {
       // Only render if icons are ready
-      if (icadTrainIcon && dicTrainIcon) {
+      if (ndpIcadTrainIcon && ndpDicTrainIcon && sijiIcadTrainIcon && sijiDicTrainIcon) {
         renderChart();
       }
     }, { deep: true });
