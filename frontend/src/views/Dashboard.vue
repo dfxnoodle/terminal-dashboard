@@ -177,10 +177,7 @@
             <div class="metric-value text-green-600">{{ getAverageWeightForPeriod('today') }}</div>
             <div class="metric-label">Today Avg (tons)</div>
           </div>
-          <!-- <div class="text-center">
-            <div class="metric-value text-blue-600">{{ getAverageStockpileAge('NDP') }}</div>
-            <div class="metric-label">NDP Avg Age (hrs)</div>
-          </div> -->
+
         </div>
         
         <!-- Daily breakdown chart 
@@ -294,6 +291,15 @@
       <!-- 5th Item: Stockpile Utilization -->
       <div class="card">
         <h2 class="card-header">Silo / Stockpile Utilization</h2>
+
+        <!-- NDP Stockpiles -->
+        <div>
+          <h3 class="text-xl font-semibold text-brand-gray mb-4">NDP Terminal</h3>
+          <div v-if="getFilteredStockpiles(dashboardData.stockpiles?.NDP).length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <StockpileBar v-for="stockpile in getFilteredStockpiles(dashboardData.stockpiles?.NDP)" :key="stockpile.name" :stockpile="stockpile" :rounding="rounding" />
+          </div>
+          <p v-else class="text-gray-500">No stockpile data available for NDP terminal.</p>
+        </div>
         
         <!-- ICAD Stockpiles -->
         <div class="mb-6">
@@ -313,14 +319,6 @@
           <p v-else class="text-gray-500">No stockpile data available for DIC terminal.</p>
         </div>
 
-        <!-- NDP Stockpiles -->
-        <div>
-          <h3 class="text-xl font-semibold text-brand-gray mb-4">NDP Terminal</h3>
-          <div v-if="getFilteredStockpiles(dashboardData.stockpiles?.NDP).length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            <StockpileBar v-for="stockpile in getFilteredStockpiles(dashboardData.stockpiles?.NDP)" :key="stockpile.name" :stockpile="stockpile" :rounding="rounding" />
-          </div>
-          <p v-else class="text-gray-500">No stockpile data available for NDP terminal.</p>
-        </div>
       </div>
     </div>
 
@@ -509,6 +507,8 @@ export default {
       
       return Math.round(averageAge)
     }
+
+
 
     const getLast14Days = () => {
       const today = new Date()

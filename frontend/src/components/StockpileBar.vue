@@ -54,10 +54,19 @@
       {{ stockpile.material_name }}
     </div>
     
-    <!-- Material Age -->
+    <!-- Material Age or Last FWO -->
     <div class="text-xs text-gray-500" v-if="stockpile.material_age_hours">
       Age: {{ Math.round(stockpile.material_age_hours) }} hours
     </div>
+    <div class="text-xs text-gray-500" v-if="stockpile.last_fwo">
+      Last FWO: {{ stockpile.last_fwo }}
+    </div>
+    
+    <!-- NDP Specific Fields -->
+    <div class="text-xs text-gray-500" v-if="stockpile.silo_loading">
+      Loading: {{ stockpile.silo_loading }}
+    </div>
+
   </div>
 </template>
 

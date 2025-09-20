@@ -497,7 +497,8 @@ class OdooAPI:
                         'id', 'x_name', 'display_name', 'x_studio_capacity',
                         'x_studio_quantity_in_stock_t', 'x_studio_terminal',
                         'x_studio_stockpile_material_age', 'x_studio_material',
-                        'x_studio_show_in_dashboard'
+                        'x_studio_show_in_dashboard', 'x_studio_last_fwo',
+                        'x_studio_silo_loading'
                     ]
                 }
             )
@@ -616,9 +617,25 @@ class OdooAPI:
                 'utilization_percent': (float(quantity) / max(display_capacity, 1)) * 100
             }
             
-            # Only include age for non-NDP terminals
+            # Include age for non-NDP terminals, last_fwo for NDP terminals
             if 'NDP' not in str(terminal).upper():
                 stockpile_data['material_age_hours'] = float(age)
+            else:
+                # For NDP terminals, include last FWO instead of age
+                last_fwo = stockpile.get('x_studio_last_fwo', '')
+                if last_fwo:
+                    stockpile_data['last_fwo'] = str(last_fwo)
+                else:
+                    stockpile_data['last_fwo'] = 'N/A'
+                
+                # Add silo loading status
+                silo_loading = stockpile.get('x_studio_silo_loading', '')
+                if silo_loading:
+                    stockpile_data['silo_loading'] = str(silo_loading)
+                else:
+                    stockpile_data['silo_loading'] = 'N/A'
+                
+
             
             if 'ICAD' in str(terminal).upper():
                 icad_stockpiles.append(stockpile_data)
