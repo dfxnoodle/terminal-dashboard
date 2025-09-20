@@ -49,10 +49,14 @@
             <div class="metric-value text-red-600">{{ getAverageStockpileAge('ICAD') }}</div>
             <div class="metric-label">ICAD Avg Age (hrs)</div>
           </div>
-          <div class="text-center">
+          <div class="text-center border-r border-gray-200">
             <div class="metric-value text-amber-600">{{ getAverageStockpileAge('DIC') }}</div>
             <div class="metric-label">DIC Avg Age (hrs)</div>
           </div>
+          <!-- <div class="text-center">
+            <div class="metric-value text-blue-600">{{ getAverageStockpileAge('NDP') }}</div>
+            <div class="metric-label">NDP Avg Age (hrs)</div>
+          </div> -->
         </div>
         
         <!-- Daily breakdown chart 
@@ -117,7 +121,7 @@
 
       <!-- 5th Item: Stockpile Utilization -->
       <div class="card">
-        <h2 class="card-header">Stockpile Utilization</h2>
+        <h2 class="card-header">Silo / Stockpile Utilization</h2>
         
         <!-- ICAD Stockpiles -->
         <div class="mb-8">
@@ -129,12 +133,21 @@
         </div>
 
         <!-- DIC Stockpiles -->
-        <div>
+        <div class="mb-8">
           <h3 class="text-xl font-semibold text-brand-gray mb-4">DIC Terminal</h3>
           <div v-if="getFilteredStockpiles(dashboardData.stockpiles?.DIC).length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             <StockpileBar v-for="stockpile in getFilteredStockpiles(dashboardData.stockpiles?.DIC)" :key="stockpile.name" :stockpile="stockpile" :rounding="rounding" />
           </div>
           <p v-else class="text-gray-500">No stockpile data available for DIC terminal.</p>
+        </div>
+
+        <!-- NDP Stockpiles -->
+        <div>
+          <h3 class="text-xl font-semibold text-brand-gray mb-4">NDP Terminal</h3>
+          <div v-if="getFilteredStockpiles(dashboardData.stockpiles?.NDP).length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <StockpileBar v-for="stockpile in getFilteredStockpiles(dashboardData.stockpiles?.NDP)" :key="stockpile.name" :stockpile="stockpile" :rounding="rounding" />
+          </div>
+          <p v-else class="text-gray-500">No stockpile data available for NDP terminal.</p>
         </div>
       </div>
     </div>

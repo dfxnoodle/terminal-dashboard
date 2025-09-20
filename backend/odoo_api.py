@@ -129,6 +129,7 @@ class OdooAPI:
                 'x_studio_actual_train_departure', 
                 'x_studio_selection_field_83c_1ig067df9',
                 'x_studio_destination_terminal',
+                'x_studio_origin_terminal',
                 'x_name',
                 'x_studio_train_id'
             ]}
@@ -224,7 +225,7 @@ class OdooAPI:
         }
     
     def get_stockpile_utilization(self):
-        """5th Item: Stockpile utilization for ICAD and DIC terminals"""
+        """5th Item: Stockpile utilization for ICAD, DIC and NDP terminals"""
         try:
             # Fetch stockpile records
             stockpiles = self.execute_kw(
@@ -301,21 +302,25 @@ class OdooAPI:
         # Group by terminal
         icad_stockpiles = []
         dic_stockpiles = []
+        ndp_stockpiles = []
         
         for stockpile in stockpiles:
             # Check if stockpile should be shown in dashboard
             show_in_dashboard = stockpile.get('x_studio_show_in_dashboard', False)
+            terminal = stockpile.get('x_studio_terminal', '')
             
-            # Skip stockpiles that shouldn't be shown in dashboard
-            if not show_in_dashboard:
+            # Skip stockpiles that shouldn't be shown in dashboard, EXCEPT for NDP terminal
+            # We want to show NDP stockpiles even if they're not configured for dashboard display
+            if not show_in_dashboard and 'NDP' not in str(terminal).upper():
                 continue
             
             # Use the actual field names from Odoo
             name = stockpile.get('x_name') or stockpile.get('display_name') or f"Stockpile {stockpile.get('id', '')}"
             capacity = stockpile.get('x_studio_capacity', 5000.0)
             quantity = stockpile.get('x_studio_quantity_in_stock_t', 0.0)
-            terminal = stockpile.get('x_studio_terminal', '')
             age = stockpile.get('x_studio_stockpile_material_age', 0.0)
+            
+
             
             # Get material name from the material field
             material_name = ''
@@ -339,24 +344,32 @@ class OdooAPI:
                     except:
                         material_name = 'Unknown'
             
+            # Handle zero capacity for NDP stockpiles - use quantity as capacity if capacity is 0
+            display_capacity = float(capacity)
+            if display_capacity == 0 and 'NDP' in str(terminal).upper() and float(quantity) > 0:
+                display_capacity = float(quantity)  # Use quantity as capacity for NDP silos
+            
             stockpile_data = {
                 'name': str(name),
-                'capacity': float(capacity),
+                'capacity': display_capacity,
                 'quantity': float(quantity),
                 'material_name': material_name,
                 'material_age_hours': float(age),
-                'utilization_percent': (float(quantity) / max(float(capacity), 1)) * 100
+                'utilization_percent': (float(quantity) / max(display_capacity, 1)) * 100
             }
             
             if 'ICAD' in str(terminal).upper():
                 icad_stockpiles.append(stockpile_data)
             elif 'DIC' in str(terminal).upper():
                 dic_stockpiles.append(stockpile_data)
+            elif 'NDP' in str(terminal).upper():
+                ndp_stockpiles.append(stockpile_data)
             else:
-                # If no terminal specified, add some demo data
-                icad_stockpiles.append({**stockpile_data, 'name': f"ICAD-{stockpile_data['name']}"})
+                # Log unknown terminals for debugging
+                logger.warning(f"Unknown terminal '{terminal}' for stockpile {name}")
         
         return {
             'ICAD': icad_stockpiles,
-            'DIC': dic_stockpiles
+            'DIC': dic_stockpiles,
+            'NDP': ndp_stockpiles
         }
