@@ -309,9 +309,8 @@ class OdooAPI:
             show_in_dashboard = stockpile.get('x_studio_show_in_dashboard', False)
             terminal = stockpile.get('x_studio_terminal', '')
             
-            # Skip stockpiles that shouldn't be shown in dashboard, EXCEPT for NDP terminal
-            # We want to show NDP stockpiles even if they're not configured for dashboard display
-            if not show_in_dashboard and 'NDP' not in str(terminal).upper():
+            # Skip stockpiles that shouldn't be shown in dashboard
+            if not show_in_dashboard:
                 continue
             
             # Use the actual field names from Odoo
@@ -354,9 +353,12 @@ class OdooAPI:
                 'capacity': display_capacity,
                 'quantity': float(quantity),
                 'material_name': material_name,
-                'material_age_hours': float(age),
                 'utilization_percent': (float(quantity) / max(display_capacity, 1)) * 100
             }
+            
+            # Only include age for non-NDP terminals
+            if 'NDP' not in str(terminal).upper():
+                stockpile_data['material_age_hours'] = float(age)
             
             if 'ICAD' in str(terminal).upper():
                 icad_stockpiles.append(stockpile_data)

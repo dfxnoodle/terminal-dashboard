@@ -252,8 +252,6 @@ async def cors_test():
         "network_mode": os.getenv("NETWORK_MODE", "false")
     }
 
-
-
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8003)
