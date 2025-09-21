@@ -59,7 +59,7 @@
       Age: {{ Math.round(stockpile.material_age_hours) }} hours
     </div>
     <div class="text-xs text-gray-500" v-if="stockpile.last_fwo">
-      Last FWO: {{ stockpile.last_fwo }}
+      {{ stockpile.last_fwo }}
     </div>
     
     <!-- NDP Specific Fields -->
