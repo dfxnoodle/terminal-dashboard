@@ -135,19 +135,19 @@
         <div class="grid grid-cols-1 md:grid-cols-6 gap-4 py-3 border-b border-gray-200">
           <div class="text-center border-r border-gray-200">
             <div class="metric-value text-brand-gray">{{ dashboardData.forwarding_orders?.last_week_count || 0 }}</div>
-            <div class="metric-label">Last Week Orders</div>
+            <div class="metric-label">Last Week Trains</div>
           </div>          
           <div class="text-center border-r border-gray-200">
             <div class="metric-value text-brand-red">{{ dashboardData.forwarding_orders?.current_week_count || 0 }}</div>
-            <div class="metric-label">This Week Orders</div>
+            <div class="metric-label">This Week Trains</div>
           </div>
           <div class="text-center border-r border-gray-200">
             <div class="metric-value text-purple-600">{{ dashboardData.forwarding_orders?.yesterday_count || 0 }}</div>
-            <div class="metric-label">Yesterday Orders</div>
+            <div class="metric-label">Yesterday Trains</div>
           </div>
           <div class="text-center border-r border-gray-200">
             <div class="metric-value text-green-600">{{ dashboardData.forwarding_orders?.today_count || 0 }}</div>
-            <div class="metric-label">Today Orders</div>
+            <div class="metric-label">Today Trains</div>
           </div>
           <div class="text-center border-r border-gray-200">
             <div class="metric-value text-red-600">{{ getAverageStockpileAge('ICAD') }}</div>
@@ -163,19 +163,19 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 py-3">
           <div class="text-center">
             <div class="metric-value text-gray-600">{{ getAverageWeightForPeriod('last_week') }}</div>
-            <div class="metric-label">Last Week Avg (tons)</div>
+            <div class="metric-label">Last Week Avg per Train (tons)</div>
           </div>          
           <div class="text-center">
             <div class="metric-value text-blue-600">{{ getAverageWeightForPeriod('current_week') }}</div>
-            <div class="metric-label">This Week Avg (tons)</div>
+            <div class="metric-label">This Week Avg per Train (tons)</div>
           </div>
           <div class="text-center">
             <div class="metric-value text-purple-600">{{ getAverageWeightForPeriod('yesterday') }}</div>
-            <div class="metric-label">Yesterday Avg (tons)</div>
+            <div class="metric-label">Yesterday Avg per Train (tons)</div>
           </div>
           <div class="text-center">
             <div class="metric-value text-green-600">{{ getAverageWeightForPeriod('today') }}</div>
-            <div class="metric-label">Today Avg (tons)</div>
+            <div class="metric-label">Today Avg per Train (tons)</div>
           </div>
 
         </div>
@@ -437,32 +437,32 @@ export default {
       const fwoData = dashboardData.value.forwarding_orders
       if (!fwoData) return 'N/A'
 
-      let count = 0
-      let weight = 0
+      let trainCount = 0
+      let totalWeight = 0
 
       switch (period) {
         case 'last_week':
-          count = fwoData.last_week_count || 0
-          weight = fwoData.last_week_weight || 0
+          trainCount = fwoData.last_week_count || 0  // Now represents train count
+          totalWeight = fwoData.last_week_weight || 0
           break
         case 'current_week':
-          count = fwoData.current_week_count || 0
-          weight = fwoData.current_week_weight || 0
+          trainCount = fwoData.current_week_count || 0  // Now represents train count
+          totalWeight = fwoData.current_week_weight || 0
           break
         case 'yesterday':
-          count = fwoData.yesterday_count || 0
-          weight = fwoData.yesterday_weight || 0
+          trainCount = fwoData.yesterday_count || 0  // Now represents train count
+          totalWeight = fwoData.yesterday_weight || 0
           break
         case 'today':
-          count = fwoData.today_count || 0
-          weight = fwoData.today_weight || 0
+          trainCount = fwoData.today_count || 0  // Now represents train count
+          totalWeight = fwoData.today_weight || 0
           break
         default:
           return 'N/A'
       }
 
-      if (count === 0) return 'N/A'
-      return formatWeight(weight / count)
+      if (trainCount === 0) return 'N/A'
+      return formatWeight(totalWeight / trainCount)
     }
 
     const getTodayCount = () => {

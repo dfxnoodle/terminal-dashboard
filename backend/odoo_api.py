@@ -302,21 +302,58 @@ class OdooAPI:
                 day_key = departure_dt.strftime('%Y-%m-%d')
                 daily_counts[day_key] = daily_counts.get(day_key, 0) + 1
         
-        # Calculate weight totals
-        current_week_weight = sum(order.get('x_studio_total_weight_tons', 0) for order in current_week_orders)
-        last_week_weight = sum(order.get('x_studio_total_weight_tons', 0) for order in last_week_orders)
-        today_weight = sum(order.get('x_studio_total_weight_tons', 0) for order in today_orders)
-        yesterday_weight = sum(order.get('x_studio_total_weight_tons', 0) for order in yesterday_orders)
+        # Group orders by train and calculate train-based metrics
+        def group_orders_by_train(orders_list):
+            """Group orders by train_id and departure time, return unique trains with total weight"""
+            trains = {}
+            for order in orders_list:
+                train_id = order.get('x_studio_train_id', 'Unknown')
+                departure_time = order.get('x_studio_actual_train_departure', '')
+                
+                # Create a unique key for each train departure
+                train_key = f"{train_id}_{departure_time}"
+                
+                if train_key not in trains:
+                    trains[train_key] = {
+                        'train_id': train_id,
+                        'departure_time': departure_time,
+                        'total_weight': 0,
+                        'orders': []
+                    }
+                
+                trains[train_key]['total_weight'] += order.get('x_studio_total_weight_tons', 0)
+                trains[train_key]['orders'].append(order)
+            
+            return list(trains.values())
+        
+        # Get unique trains for each period
+        current_week_trains = group_orders_by_train(current_week_orders)
+        last_week_trains = group_orders_by_train(last_week_orders)
+        today_trains = group_orders_by_train(today_orders)
+        yesterday_trains = group_orders_by_train(yesterday_orders)
+        
+        # Calculate weight totals (sum of all train weights)
+        current_week_weight = sum(train['total_weight'] for train in current_week_trains)
+        last_week_weight = sum(train['total_weight'] for train in last_week_trains)
+        today_weight = sum(train['total_weight'] for train in today_trains)
+        yesterday_weight = sum(train['total_weight'] for train in yesterday_trains)
         
         return {
-            'current_week_count': len(current_week_orders),
-            'last_week_count': len(last_week_orders),
-            'today_count': len(today_orders),
-            'yesterday_count': len(yesterday_orders),
+            # Train counts instead of order counts
+            'current_week_count': len(current_week_trains),
+            'last_week_count': len(last_week_trains),
+            'today_count': len(today_trains),
+            'yesterday_count': len(yesterday_trains),
+            # Total weights remain the same
             'current_week_weight': current_week_weight,
             'last_week_weight': last_week_weight,
             'today_weight': today_weight,
             'yesterday_weight': yesterday_weight,
+            # Train data for calculating averages
+            'current_week_trains': current_week_trains,
+            'last_week_trains': last_week_trains,
+            'today_trains': today_trains,
+            'yesterday_trains': yesterday_trains,
             'daily_counts': daily_counts,
             'current_week_orders': current_week_orders,
             'last_week_orders': last_week_orders,
