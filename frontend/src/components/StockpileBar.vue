@@ -36,7 +36,7 @@
         ></div>
         
         <!-- Percentage label -->
-        <div class="absolute bottom-0 right-0 z-10">
+        <div class="absolute -top-4 right-0 z-10">
           <span class="text-xs font-bold px-1.5 py-0.5 rounded text-white bg-gray-800 bg-opacity-75">
             {{ Math.round(stockpile.utilization_percent) }}%
           </span>
