@@ -16,8 +16,8 @@
         <div 
           class="pile-shape transition-all duration-700 ease-out"
           :style="{
-            height: `${Math.max(12, stockpile.utilization_percent * 0.5)}px`,
-            width: `${Math.max(30, stockpile.utilization_percent * 1.2)}px`,
+            height: `${stockpile.utilization_percent === 0 ? 2 : Math.max(6, stockpile.utilization_percent * 0.6)}px`,
+            width: `${stockpile.utilization_percent === 0 ? 5 : Math.max(20, stockpile.utilization_percent * 1.0)}px`,
             backgroundColor: getUtilizationColor(stockpile.utilization_percent),
           }"
         ></div>
