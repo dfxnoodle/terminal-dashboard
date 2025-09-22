@@ -14,16 +14,18 @@
       <div class="relative pile-container">
         <!-- Main pile shape -->
         <div 
+          v-if="Math.round(stockpile.utilization_percent) > 0"
           class="pile-shape transition-all duration-700 ease-out"
           :style="{
-            height: `${stockpile.utilization_percent === 0 ? 2 : Math.max(6, stockpile.utilization_percent * 0.6)}px`,
-            width: `${stockpile.utilization_percent === 0 ? 5 : Math.max(20, stockpile.utilization_percent * 1.0)}px`,
+            height: `${Math.max(6, stockpile.utilization_percent * 0.6)}px`,
+            width: `${Math.max(20, stockpile.utilization_percent * 1.0)}px`,
             backgroundColor: getUtilizationColor(stockpile.utilization_percent),
           }"
         ></div>
         
         <!-- Pile texture/particles for visual interest -->
         <div 
+          v-if="Math.round(stockpile.utilization_percent) > 0"
           v-for="n in getParticleCount(stockpile.utilization_percent)" 
           :key="n"
           class="pile-particle"
