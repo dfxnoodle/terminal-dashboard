@@ -293,7 +293,7 @@
         <h2 class="card-header">Silo / Stockpile Utilization</h2>
 
         <!-- NDP Stockpiles -->
-        <div>
+        <div class="mb-8">
           <h3 class="text-xl font-semibold text-brand-gray mb-4">NDP Terminal</h3>
           <div v-if="getFilteredStockpiles(dashboardData.stockpiles?.NDP).length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             <StockpileBar v-for="stockpile in getFilteredStockpiles(dashboardData.stockpiles?.NDP)" :key="stockpile.name" :stockpile="stockpile" :rounding="rounding" />
@@ -302,7 +302,7 @@
         </div>
         
         <!-- ICAD Stockpiles -->
-        <div class="mb-6">
+        <div class="mb-8">
           <h3 class="text-xl font-semibold text-brand-gray mb-3">ICAD Terminal</h3>
           <div v-if="getFilteredStockpiles(dashboardData.stockpiles?.ICAD).length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
             <StockpileBar v-for="stockpile in getFilteredStockpiles(dashboardData.stockpiles?.ICAD)" :key="stockpile.name" :stockpile="stockpile" :rounding="rounding" />
