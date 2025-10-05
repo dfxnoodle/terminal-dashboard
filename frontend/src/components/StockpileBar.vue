@@ -60,12 +60,45 @@
     <div class="text-xs text-gray-500" v-if="stockpile.material_age_hours">
       Age: {{ Math.round(stockpile.material_age_hours) }} hours
     </div>
-    <div class="text-xs text-gray-500" v-if="stockpile.last_fwo">
-      {{ stockpile.last_fwo }}
+    <div class="text-xs text-gray-600 font-semibold" v-if="stockpile.last_fwo">
+      Order: {{ stockpile.last_fwo }}
     </div>
     
     <!-- NDP Specific Fields -->
-    <div class="text-xs text-gray-500" v-if="stockpile.silo_loading">
+    <div v-if="stockpile.last_fwo && stockpile.last_fwo !== 'N/A'" class="mt-2 pt-2 border-t border-gray-200 space-y-1">
+      <!-- Destination -->
+      <div class="text-xs text-gray-500" v-if="stockpile.last_ordered_destination">
+        <span class="font-medium">To:</span> {{ stockpile.last_ordered_destination }}
+      </div>
+      
+      <!-- ETD -->
+      <div class="text-xs text-gray-500" v-if="stockpile.last_fwo_etd">
+        <span class="font-medium">ETD:</span> {{ formatDate(stockpile.last_fwo_etd) }}
+      </div>
+      
+      <!-- Planned Quantity -->
+      <div class="text-xs text-gray-500" v-if="stockpile.last_fwo_planned_quantity">
+        <span class="font-medium">Planned:</span> {{ Math.round(stockpile.last_fwo_planned_quantity) }} t
+      </div>
+      
+      <!-- Transporter -->
+      <div class="text-xs text-gray-500" v-if="stockpile.last_fwo_planned_transporter">
+        <span class="font-medium">By:</span> {{ stockpile.last_fwo_planned_transporter }}
+      </div>
+      
+      <!-- Truck Completed Count -->
+      <div class="text-xs text-green-600 font-medium" v-if="stockpile.truck_completed_count !== undefined">
+        <span class="font-medium">Completed:</span> {{ stockpile.truck_completed_count }} trucks
+      </div>
+      
+      <!-- First Truck Gate In -->
+      <div class="text-xs text-blue-600" v-if="stockpile.first_truck_gate_in && stockpile.first_truck_gate_in !== 'N/A'">
+        <span class="font-medium">1st Truck:</span> {{ formatDateTime(stockpile.first_truck_gate_in) }}
+      </div>
+    </div>
+    
+    <!-- Silo Loading (shown separately if no FWO) -->
+    <div class="text-xs text-gray-500" v-if="stockpile.silo_loading && stockpile.silo_loading !== 'N/A'">
       Loading: {{ stockpile.silo_loading }}
     </div>
 
@@ -153,12 +186,44 @@ export default {
       })
     }
 
+    const formatDate = (dateString) => {
+      if (!dateString || dateString === 'N/A') return 'N/A'
+      try {
+        const date = new Date(dateString)
+        return date.toLocaleDateString('en-GB', { 
+          day: '2-digit', 
+          month: '2-digit', 
+          year: 'numeric' 
+        })
+      } catch {
+        return dateString
+      }
+    }
+
+    const formatDateTime = (dateTimeString) => {
+      if (!dateTimeString || dateTimeString === 'N/A') return 'N/A'
+      try {
+        const date = new Date(dateTimeString)
+        return date.toLocaleString('en-GB', { 
+          day: '2-digit', 
+          month: '2-digit', 
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      } catch {
+        return dateTimeString
+      }
+    }
+
     return {
       getUtilizationColor,
       getParticleColor,
       getParticleCount,
       getRandomPosition,
       formatNumber,
+      formatDate,
+      formatDateTime,
       formattedQuantity
     }
   }

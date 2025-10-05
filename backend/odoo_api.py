@@ -535,7 +535,9 @@ class OdooAPI:
                         'x_studio_quantity_in_stock_t', 'x_studio_terminal',
                         'x_studio_stockpile_material_age', 'x_studio_material',
                         'x_studio_show_in_dashboard', 'x_studio_last_fwo',
-                        'x_studio_silo_loading'
+                        'x_studio_silo_loading', 'x_studio_last_ordered_destination',
+                        'x_studio_last_fwo_etd', 'x_studio_last_fwo_planned_quantity',
+                        'x_studio_last_fwo_planned_fm_transporter'
                     ]
                 }
             )
@@ -646,6 +648,15 @@ class OdooAPI:
             if display_capacity == 0 and 'NDP' in str(terminal).upper() and float(quantity) > 0:
                 display_capacity = float(quantity)  # Use quantity as capacity for NDP silos
             
+            # Get material ID for NDP truck queries
+            material_id = None
+            material_field = stockpile.get('x_studio_material')
+            if material_field:
+                if isinstance(material_field, list) and len(material_field) > 0:
+                    material_id = material_field[0]
+                else:
+                    material_id = material_field
+            
             stockpile_data = {
                 'name': str(name),
                 'capacity': display_capacity,
@@ -672,6 +683,107 @@ class OdooAPI:
                 else:
                     stockpile_data['silo_loading'] = 'N/A'
                 
+                # Add new NDP-specific fields
+                # Destination
+                last_ordered_destination = stockpile.get('x_studio_last_ordered_destination', '')
+                stockpile_data['last_ordered_destination'] = str(last_ordered_destination) if last_ordered_destination else 'N/A'
+                
+                # ETD
+                last_fwo_etd = stockpile.get('x_studio_last_fwo_etd', '')
+                stockpile_data['last_fwo_etd'] = str(last_fwo_etd) if last_fwo_etd else 'N/A'
+                
+                # Planned quantity
+                last_fwo_planned_qty = stockpile.get('x_studio_last_fwo_planned_quantity', 0.0)
+                stockpile_data['last_fwo_planned_quantity'] = float(last_fwo_planned_qty) if last_fwo_planned_qty else 0.0
+                
+                # Planned transporter
+                last_fwo_planned_transporter = stockpile.get('x_studio_last_fwo_planned_fm_transporter', '')
+                if last_fwo_planned_transporter:
+                    if isinstance(last_fwo_planned_transporter, list) and len(last_fwo_planned_transporter) > 1:
+                        stockpile_data['last_fwo_planned_transporter'] = str(last_fwo_planned_transporter[1])
+                    else:
+                        stockpile_data['last_fwo_planned_transporter'] = str(last_fwo_planned_transporter)
+                else:
+                    stockpile_data['last_fwo_planned_transporter'] = 'N/A'
+                
+                # Fetch truck data for this stockpile
+                if last_fwo and material_id and last_fwo != 'N/A':
+                    try:
+                        # First, get the forwarding order ID by name
+                        fwo_records = self.execute_kw(
+                            'x_fwo', 'search_read',
+                            [[['x_name', '=', last_fwo]]],
+                            {'fields': ['id', 'x_name'], 'limit': 1}
+                        )
+                        
+                        if fwo_records and len(fwo_records) > 0:
+                            fwo_id = fwo_records[0]['id']
+                            
+                            # Query for truck completed count
+                            # Condition 1: x_studio_forwarding_order_selectable.x_name = last_fwo (using fwo_id)
+                            # Condition 2: x_studio_material = material_id
+                            # Condition 3: x_studio_selection_field_1d4_1icdknqu2 in ['Gate-out Completed', 'Train Departed']
+                            truck_completed_domain = [
+                                ['x_studio_forwarding_order_selectable', '=', fwo_id],
+                                ['x_studio_material', '=', material_id],
+                                ['x_studio_selection_field_1d4_1icdknqu2', 'in', ['Gate-out Completed', 'Train Departed']]
+                            ]
+                            
+                            truck_completed_count = self.execute_kw(
+                                'x_first_mile_freight', 'search_count',
+                                [truck_completed_domain]
+                            )
+                            stockpile_data['truck_completed_count'] = truck_completed_count
+                            
+                            # Debug logging
+                            logger.info(f"Stockpile {name} - Order: {last_fwo}, Material ID: {material_id}, Completed Trucks: {truck_completed_count}")
+                            
+                            # Query for first truck (earliest gate-in)
+                            # Condition 1: x_studio_forwarding_order_selectable.x_name = last_fwo (using fwo_id)
+                            # Condition 2: x_studio_material = material_id
+                            # Condition 3: x_studio_selection_field_1d4_1icdknqu2 in ['Gate-in Completed', 'Gate-out Completed', 'Train Departed']
+                            # Condition 4: Order by x_studio_actual_date_and_time_of_gate_in (earliest)
+                            first_truck_domain = [
+                                ['x_studio_forwarding_order_selectable', '=', fwo_id],
+                                ['x_studio_material', '=', material_id],
+                                ['x_studio_selection_field_1d4_1icdknqu2', 'in', ['Gate-in Completed', 'Gate-out Completed', 'Train Departed']],
+                                ['x_studio_actual_date_and_time_of_gate_in', '!=', False]
+                            ]
+                            
+                            first_truck_records = self.execute_kw(
+                                'x_first_mile_freight', 'search_read',
+                                [first_truck_domain],
+                                {
+                                    'fields': ['x_studio_actual_date_and_time_of_gate_in', 'x_name'],
+                                    'limit': 1,
+                                    'order': 'x_studio_actual_date_and_time_of_gate_in asc'
+                                }
+                            )
+                            
+                            if first_truck_records and len(first_truck_records) > 0:
+                                first_truck_time = first_truck_records[0].get('x_studio_actual_date_and_time_of_gate_in', 'N/A')
+                                first_truck_name = first_truck_records[0].get('x_name', 'N/A')
+                                stockpile_data['first_truck_gate_in'] = str(first_truck_time) if first_truck_time else 'N/A'
+                                
+                                # Debug logging
+                                logger.info(f"Stockpile {name} - First Truck: {first_truck_name}, Gate-in: {first_truck_time}")
+                            else:
+                                stockpile_data['first_truck_gate_in'] = 'N/A'
+                                logger.info(f"Stockpile {name} - No first truck found matching criteria")
+                        else:
+                            # FWO not found
+                            logger.warning(f"Forwarding order '{last_fwo}' not found for stockpile {name}")
+                            stockpile_data['truck_completed_count'] = 0
+                            stockpile_data['first_truck_gate_in'] = 'N/A'
+                            
+                    except Exception as e:
+                        logger.error(f"Error fetching truck data for stockpile {name}: {e}")
+                        stockpile_data['truck_completed_count'] = 0
+                        stockpile_data['first_truck_gate_in'] = 'N/A'
+                else:
+                    stockpile_data['truck_completed_count'] = 0
+                    stockpile_data['first_truck_gate_in'] = 'N/A'
+
 
             
             if 'ICAD' in str(terminal).upper():
