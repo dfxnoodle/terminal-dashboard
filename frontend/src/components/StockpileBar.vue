@@ -203,13 +203,17 @@ export default {
     const formatDateTime = (dateTimeString) => {
       if (!dateTimeString || dateTimeString === 'N/A') return 'N/A'
       try {
-        const date = new Date(dateTimeString)
+        // Parse the UTC datetime from Odoo
+        const date = new Date(dateTimeString + ' UTC')
+        
+        // Convert to UAE timezone (UTC+4)
         return date.toLocaleString('en-GB', { 
           day: '2-digit', 
           month: '2-digit', 
           year: 'numeric',
           hour: '2-digit',
-          minute: '2-digit'
+          minute: '2-digit',
+          timeZone: 'Asia/Dubai'
         })
       } catch {
         return dateTimeString
