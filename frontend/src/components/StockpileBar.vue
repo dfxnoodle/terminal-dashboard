@@ -73,7 +73,7 @@
       
       <!-- ETD -->
       <div class="text-xs text-gray-500" v-if="stockpile.last_fwo_etd">
-        <span class="font-medium">ETD:</span> {{ formatDate(stockpile.last_fwo_etd) }}
+        <span class="font-medium">ETD:</span> {{ formatDateTime(stockpile.last_fwo_etd) }}
       </div>
       
       <!-- Planned Quantity -->
@@ -186,20 +186,6 @@ export default {
       })
     }
 
-    const formatDate = (dateString) => {
-      if (!dateString || dateString === 'N/A') return 'N/A'
-      try {
-        const date = new Date(dateString)
-        return date.toLocaleDateString('en-GB', { 
-          day: '2-digit', 
-          month: '2-digit', 
-          year: 'numeric' 
-        })
-      } catch {
-        return dateString
-      }
-    }
-
     const formatDateTime = (dateTimeString) => {
       if (!dateTimeString || dateTimeString === 'N/A') return 'N/A'
       try {
@@ -226,7 +212,6 @@ export default {
       getParticleCount,
       getRandomPosition,
       formatNumber,
-      formatDate,
       formatDateTime,
       formattedQuantity
     }
