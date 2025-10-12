@@ -26,6 +26,25 @@ class ApiService {
         const payload = JSON.parse(Base64.decode(parts[1]))
         const currentTime = Math.floor(Date.now() / 1000)
         
+        // Check if token has actually expired (not just expiring soon)
+        return payload.exp <= currentTime
+      } catch (error) {
+        console.error('Error decoding token:', error)
+        return true
+      }
+    }
+
+    // Helper function to check if token is expiring soon (within 5 minutes)
+    this.isTokenExpiringSoon = (token) => {
+      if (!token) return true
+      
+      try {
+        const parts = token.split('.')
+        if (parts.length !== 3) return true
+        
+        const payload = JSON.parse(Base64.decode(parts[1]))
+        const currentTime = Math.floor(Date.now() / 1000)
+        
         // Check if token expires within the next 5 minutes (300 seconds)
         return payload.exp <= (currentTime + 300)
       } catch (error) {
@@ -36,14 +55,14 @@ class ApiService {
 
     // Request interceptor to add token
     this.api.interceptors.request.use(
-      (config) => {
+      async (config) => {
         console.log(`Making ${config.method?.toUpperCase()} request to ${config.url}`)
         
         const token = localStorage.getItem('token')
         
-        // Check if token is expired before making request
+        // Check if token has actually expired (not just expiring soon)
         if (token && this.isTokenExpired(token)) {
-          console.log('Token is expired or expiring soon, clearing auth state')
+          console.log('Token has expired, clearing auth state')
           localStorage.removeItem('token')
           localStorage.removeItem('user')
           
@@ -52,6 +71,31 @@ class ApiService {
             window.location.href = '/login'
           }
           return Promise.reject(new Error('Token expired'))
+        }
+        
+        // Check if token is expiring soon and try to refresh it
+        if (token && this.isTokenExpiringSoon(token) && !config._retry) {
+          console.log('Token expiring soon, attempting automatic refresh...')
+          try {
+            // Import auth store dynamically to avoid circular dependency
+            const { useAuthStore } = await import('../stores/auth')
+            const authStore = useAuthStore()
+            
+            const refreshed = await authStore.refreshToken()
+            if (refreshed) {
+              console.log('Token automatically refreshed')
+              // Use the new token for this request
+              const newToken = localStorage.getItem('token')
+              if (newToken) {
+                config.headers.Authorization = `Bearer ${newToken}`
+              }
+            } else {
+              console.log('Token refresh failed, continuing with current token')
+            }
+          } catch (refreshError) {
+            console.error('Auto-refresh failed:', refreshError)
+            // Continue with current token - let the server decide if it's still valid
+          }
         }
         
         if (token) {
@@ -117,10 +161,10 @@ class ApiService {
     return this.api.get('/api/dashboard/all')
   }
 
-  // Helper method to check if current token is expiring
+  // Helper method to check if current token is expiring soon
   isCurrentTokenExpiring() {
     const token = localStorage.getItem('token')
-    return this.isTokenExpired(token)
+    return this.isTokenExpiringSoon(token)
   }
 
   // Helper method to get current token expiration

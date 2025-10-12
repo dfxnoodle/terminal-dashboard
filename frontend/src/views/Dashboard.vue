@@ -331,16 +331,34 @@
       >
         {{ loading ? 'Refreshing...' : 'Refresh Now' }}
       </button>
-      <button 
-        @click="toggleAutoRefresh" 
-        :class="{
-          'bg-green-600 hover:bg-green-700': autoRefresh,
-          'bg-gray-600 hover:bg-gray-700': !autoRefresh
-        }"
-        class="text-white px-6 py-2 rounded-full font-medium shadow-md transition-colors duration-300"
-      >
-        Auto-Refresh: {{ autoRefresh ? 'ON' : 'OFF' }}
-      </button>
+      
+      <!-- Auto-Refresh Radio Toggle -->
+      <div class="flex items-center bg-white rounded-full shadow-md px-2 py-1 border border-gray-300">
+        <span class="text-sm font-medium text-gray-700 mr-3 ml-2">Auto-Refresh:</span>
+        <div class="flex gap-1">
+          <button 
+            @click="setAutoRefresh(false)"
+            :class="{
+              'bg-gray-600 text-white': !autoRefresh,
+              'bg-gray-100 text-gray-600 hover:bg-gray-200': autoRefresh
+            }"
+            class="px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200"
+          >
+            OFF
+          </button>
+          <button 
+            @click="setAutoRefresh(true)"
+            :class="{
+              'bg-green-600 text-white': autoRefresh,
+              'bg-gray-100 text-gray-600 hover:bg-gray-200': !autoRefresh
+            }"
+            class="px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200"
+          >
+            ON
+          </button>
+        </div>
+      </div>
+      
       <button 
         @click="handleLogout" 
         class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-full font-medium shadow-md transition-colors duration-300"
@@ -589,6 +607,13 @@ export default {
       }
     }
 
+    const setAutoRefresh = (enabled) => {
+      if (enabled === autoRefresh.value) {
+        return // Already in the desired state
+      }
+      toggleAutoRefresh()
+    }
+
     const handleLogout = () => {
       logout()
     }
@@ -642,6 +667,7 @@ export default {
       getLast14Days,
       loadDashboardData,
       toggleAutoRefresh,
+      setAutoRefresh,
       logout,
       getRoleClass,
       formatRole,
