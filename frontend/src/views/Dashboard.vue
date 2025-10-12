@@ -396,7 +396,7 @@ export default {
     const loading = ref(false)
     const error = ref(null)
     const dashboardData = ref({})
-    const autoRefresh = ref(false)
+    const autoRefresh = ref(true)
     const showAdminMenu = ref(false)
     let refreshInterval = null
 
