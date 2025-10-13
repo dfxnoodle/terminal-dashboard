@@ -205,7 +205,10 @@
       </div>
 
       <!-- Siji Loading Progress -->
-      <SijiLoadingProgress />
+      <div class="card">
+        <h2 class="card-header">Train Loading Progress - Siji Terminal</h2>
+        <SijiLoadingProgress />
+      </div>
 
       <!-- 2nd, 3rd & 4th Items: Truck Orders -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">

@@ -1,10 +1,7 @@
 <template>
-  <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-    <h2 class="bg-brand-red text-white text-lg font-semibold py-2 px-4 mb-0">
-      Train Loading Progress - Siji Terminal
-    </h2>
+  <div class="bg-white rounded-lg overflow-hidden">
     
-    <div class="p-6">
+    <div class="p-2">
     <div v-if="loading" class="text-center py-8">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
       <p class="mt-4 text-gray-600">Loading train data...</p>
@@ -32,19 +29,8 @@
       </div>
       
       <!-- Overall Summary -->
-      <div class="pt-2">
-        
-        <!-- Material Being Loaded -->
-        <div v-if="loadedMaterials.length > 0" class="mb-4 p-2 bg-blue-50 border border-blue-200 rounded flex items-center gap-3 text-sm">
-          <span class="font-semibold text-blue-800">Materials:</span>
-          <div class="flex flex-wrap gap-2">
-            <span v-for="material in loadedMaterials" :key="material" 
-                  class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
-              {{ material }}
-            </span>
-          </div>
-        </div>
-        
+      <div class="pt-0">
+             
         <!-- Wagon Counts -->
         <div class="grid grid-cols-4 gap-4 text-center">
           <div>
@@ -64,13 +50,24 @@
             <p class="text-sm text-gray-600">Pending/Empty</p>
           </div>
         </div>
+
+        <!-- Material Being Loaded -->
+        <div v-if="loadedMaterials.length > 0" class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded flex items-center gap-3 text-sm">
+          <span class="font-semibold text-blue-800">Materials:</span>
+          <div class="flex flex-wrap gap-2">
+            <span v-for="material in loadedMaterials" :key="material" 
+                  class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
+              {{ material }}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
     
     <div v-else-if="data && data.error" class="bg-yellow-50 border border-yellow-200 rounded p-4">
       <p class="text-yellow-700">{{ data.error }}</p>
     </div>
-    </div> <!-- End p-6 padding div -->
+    </div> <!-- End padding div -->
   </div> <!-- End card div -->
 </template>
 
