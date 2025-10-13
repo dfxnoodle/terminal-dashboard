@@ -1,0 +1,179 @@
+{
+  "activity_ids": {
+    "relation": "mail.activity",
+    "string": "Activities",
+    "type": "one2many"
+  },
+  "activity_state": {
+    "help": "Status based on activities\nOverdue: Due date is already passed\nToday: Activity date is today\nPlanned: Future activities.",
+    "string": "Activity State",
+    "type": "selection"
+  },
+  "activity_user_id": {
+    "relation": "res.users",
+    "string": "Responsible User",
+    "type": "many2one"
+  },
+  "activity_type_id": {
+    "relation": "mail.activity.type",
+    "string": "Next Activity Type",
+    "type": "many2one"
+  },
+  "activity_type_icon": {
+    "help": "Font awesome icon e.g. fa-tasks",
+    "string": "Activity Type Icon",
+    "type": "char"
+  },
+  "activity_date_deadline": {
+    "string": "Next Activity Deadline",
+    "type": "date"
+  },
+  "my_activity_date_deadline": {
+    "string": "My Activity Deadline",
+    "type": "date"
+  },
+  "activity_summary": {
+    "string": "Next Activity Summary",
+    "type": "char"
+  },
+  "activity_exception_decoration": {
+    "help": "Type of the exception activity on record.",
+    "string": "Activity Exception Decoration",
+    "type": "selection"
+  },
+  "activity_exception_icon": {
+    "help": "Icon to indicate an exception activity.",
+    "string": "Icon",
+    "type": "char"
+  },
+  "message_is_follower": {
+    "string": "Is Follower",
+    "type": "boolean"
+  },
+  "message_follower_ids": {
+    "relation": "mail.followers",
+    "string": "Followers",
+    "type": "one2many"
+  },
+  "message_partner_ids": {
+    "relation": "res.partner",
+    "string": "Followers (Partners)",
+    "type": "many2many"
+  },
+  "message_ids": {
+    "relation": "mail.message",
+    "string": "Messages",
+    "type": "one2many"
+  },
+  "has_message": {
+    "string": "Has Message",
+    "type": "boolean"
+  },
+  "message_needaction": {
+    "help": "If checked, new messages require your attention.",
+    "string": "Action Needed",
+    "type": "boolean"
+  },
+  "message_needaction_counter": {
+    "help": "Number of messages requiring action",
+    "string": "Number of Actions",
+    "type": "integer"
+  },
+  "message_has_error": {
+    "help": "If checked, some messages have a delivery error.",
+    "string": "Message Delivery error",
+    "type": "boolean"
+  },
+  "message_has_error_counter": {
+    "help": "Number of messages with delivery error",
+    "string": "Number of errors",
+    "type": "integer"
+  },
+  "message_attachment_count": {
+    "string": "Attachment Count",
+    "type": "integer"
+  },
+  "message_has_sms_error": {
+    "help": "If checked, some messages have a delivery error.",
+    "string": "SMS Delivery error",
+    "type": "boolean"
+  },
+  "id": {
+    "string": "ID",
+    "type": "integer"
+  },
+  "display_name": {
+    "string": "Display Name",
+    "type": "char"
+  },
+  "create_uid": {
+    "relation": "res.users",
+    "string": "Created by",
+    "type": "many2one"
+  },
+  "create_date": {
+    "string": "Created on",
+    "type": "datetime"
+  },
+  "write_uid": {
+    "relation": "res.users",
+    "string": "Last Updated by",
+    "type": "many2one"
+  },
+  "write_date": {
+    "string": "Last Updated on",
+    "type": "datetime"
+  },
+  "x_studio_trainset": {
+    "relation": "x_trainset",
+    "string": "Trainset",
+    "type": "many2one"
+  },
+  "x_studio_end_time": {
+    "string": "End Time",
+    "type": "datetime"
+  },
+  "x_studio_wagon_loading_time": {
+    "string": "Wagon Loading Time",
+    "type": "float"
+  },
+  "x_name": {
+    "string": "Wagon ID",
+    "type": "char"
+  },
+  "x_active": {
+    "string": "Active",
+    "type": "boolean"
+  },
+  "x_studio_sequence": {
+    "string": "Sequence",
+    "type": "integer"
+  },
+  "x_studio_material": {
+    "relation": "x_material",
+    "string": "Material",
+    "type": "many2one"
+  },
+  "x_studio_rail_freight_order": {
+    "relation": "x_rail_freight_order",
+    "string": "Rail Freight Order",
+    "type": "many2one"
+  },
+  "x_studio_wagon": {
+    "relation": "x_wagon",
+    "string": "Wagon",
+    "type": "many2one"
+  },
+  "x_studio_start_time": {
+    "string": "Start Time",
+    "type": "datetime"
+  },
+  "x_studio_remarks": {
+    "string": "Remarks",
+    "type": "text"
+  },
+  "x_studio_net_weight_t": {
+    "string": "Net Weight (T)",
+    "type": "float"
+  }
+}

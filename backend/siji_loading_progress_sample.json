@@ -1,0 +1,31 @@
+{
+  "train_id": "4DC58",
+  "status": "Train Departed",
+  "loading_date": "2025-08-23",
+  "last_updated": "2025-08-24 03:28:33",
+  "materials": [
+    {
+      "name": "Unknown",
+      "total_wagons": 22,
+      "loaded": 0,
+      "being_loaded": 0,
+      "not_started": 22,
+      "progress_percent": 0.0
+    },
+    {
+      "name": "FALA Drainage Blanket 0-40 mm",
+      "total_wagons": 48,
+      "loaded": 0,
+      "being_loaded": 48,
+      "not_started": 0,
+      "progress_percent": 0.0
+    }
+  ],
+  "overall": {
+    "total_wagons": 70,
+    "loaded": 0,
+    "being_loaded": 48,
+    "not_started": 22,
+    "progress_percent": 0.0
+  }
+}
