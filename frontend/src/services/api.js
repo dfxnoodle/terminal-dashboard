@@ -161,6 +161,10 @@ class ApiService {
     return this.api.get('/api/dashboard/all')
   }
 
+  async getSijiLoadingProgress() {
+    return this.api.get('/api/siji-loading-progress')
+  }
+
   // Helper method to check if current token is expiring soon
   isCurrentTokenExpiring() {
     const token = localStorage.getItem('token')

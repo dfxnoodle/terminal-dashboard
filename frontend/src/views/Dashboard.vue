@@ -204,6 +204,9 @@
         </div>
       </div>
 
+      <!-- Siji Loading Progress -->
+      <SijiLoadingProgress />
+
       <!-- 2nd, 3rd & 4th Items: Truck Orders -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <!-- First Mile -->
@@ -377,12 +380,14 @@ import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
 import StockpileBar from '../components/StockpileBar.vue'
 import DepartureDotPlot from '../components/DepartureDotPlot.vue'
+import SijiLoadingProgress from '../components/SijiLoadingProgress.vue'
 
 export default {
   name: 'Dashboard',
   components: {
     StockpileBar,
-    DepartureDotPlot
+    DepartureDotPlot,
+    SijiLoadingProgress
   },
   props: {
     rounding: {

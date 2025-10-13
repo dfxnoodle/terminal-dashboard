@@ -529,6 +529,132 @@ async def get_stockpile_data(current_user: User = Depends(require_executive)):
         logger.error(f"Error fetching stockpile data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/siji-loading-progress")
+async def get_siji_loading_progress(current_user: User = Depends(require_visitor)):
+    """Get most recent Siji train loading progress (Requires at least Visitor role)"""
+    try:
+        # Query most recent Siji Train Departed or Draft
+        domain = [
+            ['x_studio_terminal', '=', 'Siji'],
+            ['x_studio_selection_field_572_1j09lmu81', 'in', ['Train Departed', 'Draft']]
+        ]
+        
+        records = odoo_api.execute_kw('x_rail_freight_order', 'search_read', [domain], {
+            'fields': [
+                'x_name',
+                'x_studio_departure_train_id',
+                'x_studio_selection_field_572_1j09lmu81',
+                'x_studio_date_of_loading',
+                'x_studio_loaded_wagons',
+                'x_studio_one2many_field_3qn_1j34hmlba',
+                'write_date',
+                'create_date'
+            ],
+            'order': 'create_date desc',
+            'limit': 1
+        })
+        
+        if not records:
+            return DashboardResponse(
+                success=True,
+                data={"error": "No Siji trains found with status 'Train Departed' or 'Draft'"},
+                timestamp=datetime.now().isoformat()
+            )
+        
+        train = records[0]
+        wagon_ids = train.get('x_studio_one2many_field_3qn_1j34hmlba', [])
+        
+        if not wagon_ids:
+            return DashboardResponse(
+                success=True,
+                data={
+                    'train_id': train.get('x_studio_departure_train_id', 'N/A'),
+                    'status': train.get('x_studio_selection_field_572_1j09lmu81', 'Unknown'),
+                    'loading_date': train.get('x_studio_date_of_loading'),
+                    'last_updated': train.get('write_date'),
+                    'materials': [],
+                    'overall': {
+                        'total_wagons': 0,
+                        'loaded': 0,
+                        'being_loaded': 0,
+                        'not_started': 0,
+                        'progress_percent': 0
+                    }
+                },
+                timestamp=datetime.now().isoformat()
+            )
+        
+        # Get wagon details
+        wagons = odoo_api.execute_kw('x_wagon_trip', 'search_read', 
+            [[['id', 'in', wagon_ids]]], {
+            'fields': ['x_name', 'x_studio_start_time', 'x_studio_end_time', 'x_studio_material']
+        })
+        
+        # Calculate stats per material
+        material_stats = {}
+        for wagon in wagons:
+            material = wagon.get('x_studio_material')
+            material_name = material[1] if material and isinstance(material, (list, tuple)) and len(material) > 1 else 'Unknown'
+            
+            if material_name not in material_stats:
+                material_stats[material_name] = {
+                    'total': 0, 'loaded': 0, 'being_loaded': 0, 'not_started': 0
+                }
+            
+            material_stats[material_name]['total'] += 1
+            
+            # Loaded: both start_time AND end_time are set
+            if wagon.get('x_studio_start_time') and wagon.get('x_studio_end_time'):
+                material_stats[material_name]['loaded'] += 1
+            # Being loaded: only start_time is set
+            elif wagon.get('x_studio_start_time'):
+                material_stats[material_name]['being_loaded'] += 1
+            # Not started: neither is set
+            else:
+                material_stats[material_name]['not_started'] += 1
+        
+        # Build response
+        materials = []
+        for name, stats in material_stats.items():
+            materials.append({
+                'name': name,
+                'total_wagons': stats['total'],
+                'loaded': stats['loaded'],
+                'being_loaded': stats['being_loaded'],
+                'not_started': stats['not_started'],
+                'progress_percent': round((stats['loaded'] / stats['total']) * 100, 1) if stats['total'] > 0 else 0
+            })
+        
+        total_wagons = len(wagons)
+        total_loaded = sum(s['loaded'] for s in material_stats.values())
+        total_being_loaded = sum(s['being_loaded'] for s in material_stats.values())
+        total_not_started = sum(s['not_started'] for s in material_stats.values())
+        
+        result = {
+            'train_id': train.get('x_studio_departure_train_id', 'N/A'),
+            'status': train.get('x_studio_selection_field_572_1j09lmu81', 'Unknown'),
+            'loading_date': train.get('x_studio_date_of_loading'),
+            'last_updated': train.get('write_date'),
+            'materials': materials,
+            'overall': {
+                'total_wagons': total_wagons,
+                'loaded': total_loaded,
+                'being_loaded': total_being_loaded,
+                'not_started': total_not_started,
+                'progress_percent': round((total_loaded / total_wagons) * 100, 1) if total_wagons > 0 else 0
+            }
+        }
+        
+        return DashboardResponse(
+            success=True,
+            data=result,
+            timestamp=datetime.now().isoformat()
+        )
+        
+    except Exception as e:
+        logger.error(f"Error fetching Siji loading progress: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/dashboard/all")
 async def get_all_dashboard_data(current_user: User = Depends(require_visitor)):
     """Get all dashboard data in one request (Requires at least Visitor role)"""
