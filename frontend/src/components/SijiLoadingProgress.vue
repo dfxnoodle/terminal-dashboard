@@ -1,50 +1,46 @@
 <template>
-  <div class="bg-white rounded-lg shadow-lg p-6">
-    <h2 class="text-2xl font-bold mb-4 flex items-center">
-      🚂 Train Loading Progress - Siji Terminal
+  <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <h2 class="bg-brand-red text-white text-lg font-semibold py-2 px-4 mb-0">
+      Train Loading Progress - Siji Terminal
     </h2>
     
+    <div class="p-6">
     <div v-if="loading" class="text-center py-8">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
       <p class="mt-4 text-gray-600">Loading train data...</p>
     </div>
     
-    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded p-4">
+    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded p-2">
       <p class="text-red-600">{{ error }}</p>
     </div>
     
     <div v-else-if="data && !data.error">
       <!-- Header Info -->
-      <div class="grid grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded">
+      <div class="flex justify-between items-center mb-6 p-2 bg-gray-50 rounded text-base">
         <div>
-          <p class="text-sm text-gray-600">Train ID</p>
-          <p class="text-xl font-bold">{{ data.train_id }}</p>
+          <span class="text-gray-600">Train ID:</span>
+          <span class="font-bold ml-1">{{ data.train_id }}</span>
         </div>
         <div>
-          <p class="text-sm text-gray-600">Status</p>
-          <p class="text-xl font-bold text-green-600">{{ data.status }}</p>
+          <span class="text-gray-600">Status:</span>
+          <span class="font-bold text-green-600 ml-1">{{ data.status }}</span>
         </div>
         <div>
-          <p class="text-sm text-gray-600">Loading Date</p>
-          <p class="text-lg">{{ formatDate(data.loading_date) }}</p>
-        </div>
-        <div>
-          <p class="text-sm text-gray-600">Last Updated</p>
-          <p class="text-lg">{{ formatDateTime(data.last_updated) }}</p>
+          <span class="text-gray-600">Loading Date:</span>
+          <span class="ml-1">{{ formatDate(data.loading_date) }}</span>
         </div>
       </div>
       
       <!-- Overall Summary -->
       <div class="pt-2">
-        <h3 class="text-lg font-semibold mb-3">Overall Summary</h3>
         
         <!-- Material Being Loaded -->
-        <div v-if="loadedMaterials.length > 0" class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
-          <p class="text-sm font-semibold text-blue-800 mb-1">Materials:</p>
+        <div v-if="loadedMaterials.length > 0" class="mb-4 p-2 bg-blue-50 border border-blue-200 rounded flex items-center gap-3 text-sm">
+          <span class="font-semibold text-blue-800">Materials:</span>
           <div class="flex flex-wrap gap-2">
             <span v-for="material in loadedMaterials" :key="material" 
-                  class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-              📦 {{ material }}
+                  class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
+              {{ material }}
             </span>
           </div>
         </div>
@@ -74,7 +70,8 @@
     <div v-else-if="data && data.error" class="bg-yellow-50 border border-yellow-200 rounded p-4">
       <p class="text-yellow-700">{{ data.error }}</p>
     </div>
-  </div>
+    </div> <!-- End p-6 padding div -->
+  </div> <!-- End card div -->
 </template>
 
 <script setup>

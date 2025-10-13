@@ -132,7 +132,7 @@
         <h2 class="card-header">Train Departures</h2>
         
         <!-- Train Counts -->
-        <div class="grid grid-cols-1 md:grid-cols-6 gap-4 py-3 border-b border-gray-200">
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-4 py-1 border-b border-gray-200">
           <div class="text-center border-r border-gray-200">
             <div class="metric-value text-brand-gray">{{ dashboardData.forwarding_orders?.last_week_count || 0 }}</div>
             <div class="metric-label">Last Week Trains</div>
@@ -212,6 +212,7 @@
         <!-- First Mile -->
         <div class="card text-center">
           <h2 class="card-header">First Mile (NDP)</h2>
+          <div class="p-4">
           <div class="py-3">
             <!-- Today's Data -->
             <div class="border-b border-gray-200 pb-3 mb-3">
@@ -234,11 +235,13 @@
               <div class="metric-label">Avg per Order (tons)</div>
             </div>
           </div>
+          </div> <!-- End p-4 padding -->
         </div>
 
         <!-- Last Mile ICAD -->
         <div class="card text-center">
           <h2 class="card-header">Last Mile (ICAD)</h2>
+          <div class="p-4">
           <div class="py-3">
             <!-- Today's Data -->
             <div class="border-b border-gray-200 pb-3 mb-3">
@@ -261,11 +264,13 @@
               <div class="metric-label">Avg per Order (tons)</div>
             </div>
           </div>
+          </div> <!-- End p-4 padding -->
         </div>
 
         <!-- Last Mile DIC -->
         <div class="card text-center">
           <h2 class="card-header">Last Mile (DIC)</h2>
+          <div class="p-4">
           <div class="py-3">
             <!-- Today's Data -->
             <div class="border-b border-gray-200 pb-3 mb-3">
@@ -288,6 +293,7 @@
               <div class="metric-label">Avg per Order (tons)</div>
             </div>
           </div>
+          </div> <!-- End p-4 padding -->
         </div>
       </div>
 
@@ -295,6 +301,7 @@
       <div class="card">
         <h2 class="card-header">Silo / Stockpile Utilization</h2>
 
+        <div class="p-4">
         <!-- NDP Stockpiles -->
         <div class="mb-8">
           <h3 class="text-xl font-semibold text-brand-gray mb-4">NDP Terminal</h3>
@@ -321,6 +328,7 @@
           </div>
           <p v-else class="text-gray-500">No stockpile data available for DIC terminal.</p>
         </div>
+        </div> <!-- End p-4 padding -->
 
       </div>
     </div>
