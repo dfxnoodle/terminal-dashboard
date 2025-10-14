@@ -29,7 +29,7 @@
       </div>
       
       <!-- Overall Summary -->
-      <div class="pt-0">
+      <div>
              
         <!-- Wagon Counts -->
         <div class="grid grid-cols-4 gap-4 text-center">
@@ -51,12 +51,13 @@
           </div>
         </div>
 
+        <br></br>
         <!-- Material Being Loaded -->
         <div v-if="loadedMaterials.length > 0" class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded flex items-center gap-3 text-sm">
           <span class="font-semibold text-blue-800">Materials:</span>
           <div class="flex flex-wrap gap-2">
             <span v-for="material in loadedMaterials" :key="material" 
-                  class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
+                  class="inline-block px-3 py-2 bg-blue-100 text-blue-700 rounded-full">
               {{ material }}
             </span>
           </div>

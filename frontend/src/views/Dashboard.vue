@@ -205,7 +205,7 @@
       </div>
 
       <!-- Siji Loading Progress -->
-      <div class="card">
+      <div v-if="authStore.isAdmin" class="card">
         <h2 class="card-header">Train Loading Progress - Siji Terminal</h2>
         <SijiLoadingProgress />
       </div>
