@@ -20,7 +20,7 @@
         </div>
         <div>
           <span class="text-gray-600">Status:</span>
-          <span class="font-bold text-green-600 ml-1">{{ data.status }}</span>
+          <span class="font-bold text-green-600 ml-1">{{ data.status === 'Draft' ? 'Loading' : data.status }}</span>
         </div>
         <div>
           <span class="text-gray-600">Loading Date:</span>
