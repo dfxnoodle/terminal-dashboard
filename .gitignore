@@ -148,3 +148,6 @@ temp/
 # Backup files
 *.bak
 *.backup
+
+# Testing
+test_*

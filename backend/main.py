@@ -11,6 +11,7 @@ from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from odoo_api import OdooAPI
+from odoo_api2 import odoo_api2
 from database import get_db, init_db, User, UserRole
 from auth_service import AuthService
 from auth_models import (
@@ -654,6 +655,56 @@ async def get_siji_loading_progress(current_user: User = Depends(require_visitor
     except Exception as e:
         logger.error(f"Error fetching Siji loading progress: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# ============================================================================
+# Intermodal Dashboard Endpoints (Odoo Config 2)
+# ============================================================================
+
+@app.get("/api/intermodal/containers/ruw")
+async def get_ruw_containers(current_user: User = Depends(require_admin)):
+    """Get container statistics for RUW location (Admin only)"""
+    try:
+        data = odoo_api2.get_ruw_container_stats()
+        return {
+            'success': True,
+            'data': data,
+            'timestamp': datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error fetching RUW container stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/intermodal/containers/all-locations")
+async def get_all_locations_containers(current_user: User = Depends(require_admin)):
+    """Get container statistics for all locations (Admin only)"""
+    try:
+        data = odoo_api2.get_all_locations_container_stats()
+        return {
+            'success': True,
+            'data': data,
+            'timestamp': datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error fetching all locations container stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/intermodal/train-departures")
+async def get_train_departures(days: int = 14, current_user: User = Depends(require_admin)):
+    """Get train departure data for the last N days (Admin only)"""
+    try:
+        data = odoo_api2.get_train_departures(days)
+        return {
+            'success': True,
+            'data': data,
+            'timestamp': datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error fetching train departures: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ============================================================================
+# Dashboard Aggregation Endpoints
+# ============================================================================
 
 @app.get("/api/dashboard/all")
 async def get_all_dashboard_data(current_user: User = Depends(require_visitor)):

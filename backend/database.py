@@ -85,7 +85,7 @@ async def init_db():
                 await auth_service.create_user(
                     session,
                     username=admin_username,
-                    email=f"{admin_username}@terminal.local",
+                    email=f"{admin_username}@linus.services",
                     full_name="System Administrator",
                     password=admin_password,
                     role=UserRole.ADMIN,
