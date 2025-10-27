@@ -165,6 +165,19 @@ class ApiService {
     return this.api.get('/api/siji-loading-progress')
   }
 
+  // Intermodal Dashboard APIs (Odoo Config 2)
+  async getIntermodalRUWContainers() {
+    return this.api.get('/api/intermodal/containers/ruw')
+  }
+
+  async getIntermodalAllLocations() {
+    return this.api.get('/api/intermodal/containers/all-locations')
+  }
+
+  async getIntermodalTrainDepartures(days = 14) {
+    return this.api.get('/api/intermodal/train-departures', { params: { days } })
+  }
+
   // Helper method to check if current token is expiring soon
   isCurrentTokenExpiring() {
     const token = localStorage.getItem('token')

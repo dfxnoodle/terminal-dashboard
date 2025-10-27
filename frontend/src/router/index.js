@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Dashboard from '../views/Dashboard.vue'
 import Login from '../views/Login.vue'
+import IntermodalDashboard from '../views/IntermodalDashboard.vue'
 import UserManagement from '../components/UserManagement.vue'
 import { useAuthStore } from '../stores/auth'
 
@@ -16,6 +17,12 @@ const routes = [
     name: 'Dashboard',
     component: Dashboard,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/intermodal',
+    name: 'IntermodalDashboard',
+    component: IntermodalDashboard,
+    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/admin/users',

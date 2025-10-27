@@ -302,7 +302,17 @@
 
       <!-- 5th Item: Stockpile Utilization -->
       <div class="card">
-        <h2 class="card-header">Silo / Stockpile Utilization</h2>
+        <div class="flex justify-between items-center bg-brand-red text-white py-3 px-4">
+          <h2 class="text-lg font-semibold">Silo / Stockpile Utilization</h2>
+          <div class="flex items-center">
+            <label for="rounding-select" class="mr-2 text-sm font-medium">Rounding:</label>
+            <select id="rounding-select" v-model="rounding" class="bg-white text-gray-900 border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-2 focus:ring-white focus:border-white text-sm">
+              <option :value="0">Whole Number</option>
+              <option :value="10">Nearest 10</option>
+              <option :value="100">Nearest 100</option>
+            </select>
+          </div>
+        </div>
 
         <div class="p-4">
         <!-- NDP Stockpiles -->
@@ -372,13 +382,6 @@
           </button>
         </div>
       </div>
-      
-      <button 
-        @click="handleLogout" 
-        class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-full font-medium shadow-md transition-colors duration-300"
-      >
-        Logout
-      </button>
     </div>
     </div> <!-- End dashboard content -->
   </div> <!-- End main container -->
@@ -400,13 +403,7 @@ export default {
     DepartureDotPlot,
     SijiLoadingProgress
   },
-  props: {
-    rounding: {
-      type: Number,
-      default: 0
-    }
-  },
-  setup(props) {
+  setup() {
     const router = useRouter()
     const authStore = useAuthStore()
     const loading = ref(false)
@@ -414,6 +411,7 @@ export default {
     const dashboardData = ref({})
     const autoRefresh = ref(true)
     const showAdminMenu = ref(false)
+    const rounding = ref(0)
     let refreshInterval = null
 
     const user = computed(() => authStore.user)
@@ -421,6 +419,11 @@ export default {
     const logout = () => {
       authStore.logout()
       router.push('/login')
+    }
+
+    const switchToIntermodal = () => {
+      localStorage.setItem('dashboardType', 'intermodal')
+      router.push('/intermodal')
     }
 
     const getRoleClass = (role) => {
@@ -452,10 +455,10 @@ export default {
     }
 
     const formatWeight = (weight) => {
-      if (props.rounding === 0) {
+      if (rounding.value === 0) {
         return Math.round(weight)
       } else {
-        return (Math.round(weight / props.rounding) * props.rounding).toFixed(0)
+        return (Math.round(weight / rounding.value) * rounding.value).toFixed(0)
       }
     }
 
@@ -669,6 +672,7 @@ export default {
       dashboardData,
       autoRefresh,
       showAdminMenu,
+      rounding,
       user,
       authStore,
       apiService,

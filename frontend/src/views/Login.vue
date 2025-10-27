@@ -37,7 +37,40 @@
           <!-- Logo and Header -->
           <div class="text-center mb-8">
             <img src="/etihad_rail_logo.png" alt="Etihad Rail" class="mx-auto h-20 w-auto mb-6 filter brightness-0 invert">
-            <h2 class="text-4xl font-bold text-white mb-2">Aggregates Operations Dashboard</h2>
+            
+            <!-- Dashboard Type Toggle -->
+            <div class="mb-6 flex justify-center">
+              <div class="inline-flex rounded-lg bg-white bg-opacity-20 p-1 backdrop-blur-sm">
+                <button
+                  type="button"
+                  @click="dashboardType = 'aggregates'"
+                  :class="[
+                    'px-6 py-2 rounded-md text-sm font-medium transition-all duration-200',
+                    dashboardType === 'aggregates' 
+                      ? 'bg-white text-brand-dark shadow-md' 
+                      : 'text-white hover:text-opacity-90'
+                  ]"
+                >
+                  Aggregates
+                </button>
+                <button
+                  type="button"
+                  @click="dashboardType = 'intermodal'"
+                  :class="[
+                    'px-6 py-2 rounded-md text-sm font-medium transition-all duration-200',
+                    dashboardType === 'intermodal' 
+                      ? 'bg-white text-brand-dark shadow-md' 
+                      : 'text-white hover:text-opacity-90'
+                  ]"
+                >
+                  Intermodal
+                </button>
+              </div>
+            </div>
+
+            <h2 class="text-4xl font-bold text-white mb-2">
+              {{ dashboardType === 'aggregates' ? 'Aggregates' : 'Intermodal' }} Operations Dashboard
+            </h2>
             <p class="text-white text-opacity-80 text-lg">Sign in to access the dashboard</p>
           </div>
 
@@ -131,6 +164,7 @@ export default {
     const error = ref(null)
     const videoLoading = ref(true)
     const videoRef = ref(null)
+    const dashboardType = ref('aggregates') // Default to aggregates
     
     const credentials = ref({
       username: '',
@@ -157,7 +191,26 @@ export default {
       try {
         const result = await authStore.login(credentials.value.username, credentials.value.password)
         if (result.success) {
-          router.push('/')
+          // Check if user is trying to access intermodal dashboard
+          if (dashboardType.value === 'intermodal') {
+            // Only allow admin users for intermodal dashboard
+            if (!authStore.isAdmin) {
+              error.value = 'Only admin users can access the Intermodal dashboard'
+              authStore.logout()
+              loading.value = false
+              return
+            }
+          }
+
+          // Store dashboard type in localStorage
+          localStorage.setItem('dashboardType', dashboardType.value)
+          
+          // Redirect based on dashboard type
+          if (dashboardType.value === 'intermodal') {
+            router.push('/intermodal')
+          } else {
+            router.push('/')
+          }
         } else {
           error.value = result.message || 'Invalid username or password'
         }
@@ -181,6 +234,7 @@ export default {
       error,
       videoLoading,
       videoRef,
+      dashboardType,
       handleLogin,
       onVideoLoadStart,
       onVideoCanPlay,

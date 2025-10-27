@@ -28,17 +28,9 @@
         <div class="flex justify-between items-center py-4">
           <div class="flex items-center space-x-4 cursor-pointer hover:opacity-80 transition-opacity" @click="goToDashboard">
             <img src="/etihad_rail_logo.png" alt="Etihad Rail Logo" class="h-10 w-10 bg-white rounded-full">
-            <h1 class="text-2xl font-bold text-white">Aggregates Operations Dashboard</h1>
+            <h1 class="text-2xl font-bold text-white">{{ dashboardTitle }}</h1>
           </div>
           <div class="flex items-center space-x-6">
-            <div class="flex items-center">
-              <label for="rounding-select" class="mr-2 text-sm font-medium text-white">Stockpile Rounding:</label>
-              <select id="rounding-select" v-model="rounding" @change="onRoundingChange" class="bg-gray-700 text-white border border-gray-600 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-brand-red focus:border-brand-red sm:text-sm">
-                <option :value="0">Whole Number</option>
-                <option :value="10">Nearest 10</option>
-                <option :value="100">Nearest 100</option>
-              </select>
-            </div>
             <div class="flex items-center space-x-2">
               <div 
                 :class="{
@@ -62,7 +54,7 @@
 
     <!-- Main content -->
     <main :class="isLoginPage ? '' : 'max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-10 relative z-10'">
-      <router-view :rounding="rounding" />
+      <router-view />
     </main>
 
     <!-- Footer - hidden on login page -->
@@ -87,14 +79,22 @@ export default {
     const connectionStatus = ref('loading')
     const lastUpdated = ref('')
     let healthCheckInterval = null
-    const rounding = ref(0)
-
-    const onRoundingChange = (event) => {
-      rounding.value = parseInt(event.target.value, 10)
-    }
 
     const isLoginPage = computed(() => {
       return route.name === 'Login'
+    })
+
+    const dashboardTitle = computed(() => {
+      switch (route.name) {
+        case 'Dashboard':
+          return 'Aggregates Operations Dashboard'
+        case 'IntermodalDashboard':
+          return 'Intermodal Operations Dashboard'
+        case 'UserManagement':
+          return 'User Management'
+        default:
+          return 'Operations Dashboard'
+      }
     })
 
     const connectionStatusText = computed(() => {
@@ -155,8 +155,7 @@ export default {
       connectionStatusText,
       lastUpdated,
       isLoginPage,
-      rounding,
-      onRoundingChange,
+      dashboardTitle,
       goToDashboard
     }
   }
