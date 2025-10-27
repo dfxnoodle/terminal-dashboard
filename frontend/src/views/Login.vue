@@ -193,9 +193,9 @@ export default {
         if (result.success) {
           // Check if user is trying to access intermodal dashboard
           if (dashboardType.value === 'intermodal') {
-            // Only allow admin users for intermodal dashboard
-            if (!authStore.isAdmin) {
-              error.value = 'Only admin users can access the Intermodal dashboard'
+            // Only allow operator / Admin users for intermodal dashboard
+            if (!authStore.isOperator && !authStore.isAdmin) {
+              error.value = 'Only operator / Admin can access the Intermodal dashboard'
               authStore.logout()
               loading.value = false
               return
