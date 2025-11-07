@@ -94,10 +94,10 @@ export default {
         return `${y}-${m}-${d}`;
       };
 
-      // Generate labels for the last 14 days
+      // Generate labels for the last 7 days
       const yLabels = new Set();
       const today = new Date();
-      for (let i = 0; i < 14; i++) {
+      for (let i = 0; i < 7; i++) {
         const date = new Date(today);
         date.setDate(today.getDate() - i);
         yLabels.add(toYYYYMMDD(date));
@@ -290,7 +290,7 @@ export default {
             },
             title: {
               display: true,
-              text: 'Train Departures (Last 14 Days)',
+              text: 'Train Departures (Last 7 Days)',
               font: {
                 size: 20,
                 weight: 'bold',
