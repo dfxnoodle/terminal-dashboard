@@ -241,8 +241,8 @@ onMounted(() => {
     return
   }
 
-  // Check if user is admin
-  if (!authStore.isAdmin) {
+  // Check if user is operator or admin
+  if (!authStore.isOperator) {
     router.push('/')
     return
   }
