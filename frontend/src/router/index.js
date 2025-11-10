@@ -22,7 +22,7 @@ const routes = [
     path: '/intermodal',
     name: 'IntermodalDashboard',
     component: IntermodalDashboard,
-    meta: { requiresAuth: true, requiresAdmin: true }
+    meta: { requiresAuth: true, requiresOperator: true }
   },
   {
     path: '/admin/users',
@@ -46,6 +46,8 @@ router.beforeEach((to, from, next) => {
   } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
     next('/')
   } else if (to.meta.requiresAdmin && !authStore.isAdmin) {
+    next('/')
+  } else if (to.meta.requiresOperator && !authStore.isOperator) {
     next('/')
   } else {
     next()

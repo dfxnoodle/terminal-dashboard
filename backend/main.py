@@ -661,8 +661,8 @@ async def get_siji_loading_progress(current_user: User = Depends(require_visitor
 # ============================================================================
 
 @app.get("/api/intermodal/containers/ruw")
-async def get_ruw_containers(current_user: User = Depends(require_admin)):
-    """Get container statistics for RUW location (Admin only)"""
+async def get_ruw_containers(current_user: User = Depends(require_operator)):
+    """Get container statistics for RUW location (Requires Operator or Admin role)"""
     try:
         data = odoo_api2.get_ruw_container_stats()
         return {
@@ -675,8 +675,8 @@ async def get_ruw_containers(current_user: User = Depends(require_admin)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/intermodal/containers/all-locations")
-async def get_all_locations_containers(current_user: User = Depends(require_admin)):
-    """Get container statistics for all locations (Admin only)"""
+async def get_all_locations_containers(current_user: User = Depends(require_operator)):
+    """Get container statistics for all locations (Requires Operator or Admin role)"""
     try:
         data = odoo_api2.get_all_locations_container_stats()
         return {
@@ -689,8 +689,8 @@ async def get_all_locations_containers(current_user: User = Depends(require_admi
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/intermodal/train-departures")
-async def get_train_departures(days: int = 14, current_user: User = Depends(require_admin)):
-    """Get train departure data for the last N days (Admin only)"""
+async def get_train_departures(days: int = 14, current_user: User = Depends(require_operator)):
+    """Get train departure data for the last N days (Requires Operator or Admin role)"""
     try:
         data = odoo_api2.get_train_departures(days)
         return {
