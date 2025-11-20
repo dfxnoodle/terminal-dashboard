@@ -250,8 +250,8 @@
             <div class="border-b border-gray-200 pb-3 mb-3">
               <div class="text-sm font-semibold text-gray-600 mb-2">Today</div>
               <div class="flex items-center justify-center gap-2">
-                <div class="metric-value" style="margin-left: 6rem;">{{ dashboardData.last_mile_icad?.total_orders || 0 }}</div>
-                <div class="text-xs text-gray-400">(Appt. made: {{ dashboardData.last_mile_icad?.confirmed_orders || 0 }})</div>
+                <div class="metric-value" style="margin-left: 4rem;">{{ dashboardData.last_mile_icad?.total_orders || 0 }}</div>
+                <div class="text-xs text-gray-400">(Apt: {{ dashboardData.last_mile_icad?.confirmed_orders || 0 }})</div>
               </div>
               <div class="metric-label">Trips Executed</div>
               <div class="metric-value mt-2 text-green-600">{{ formatWeight(dashboardData.last_mile_icad?.total_weight || 0) }}</div>
@@ -263,8 +263,8 @@
             <div>
               <div class="text-sm font-semibold text-gray-600 mb-2">Yesterday</div>
               <div class="flex items-center justify-center gap-2">
-                <div class="metric-value text-gray-500" style="margin-left: 6rem;">{{ dashboardData.last_mile_icad?.yesterday?.total_orders || 0 }}</div>
-                <div class="text-xs text-gray-400">(Appt. made: {{ dashboardData.last_mile_icad?.yesterday?.confirmed_orders || 0 }})</div>
+                <div class="metric-value text-gray-500" style="margin-left: 4rem;">{{ dashboardData.last_mile_icad?.yesterday?.total_orders || 0 }}</div>
+                <div class="text-xs text-gray-400">(Apt: {{ dashboardData.last_mile_icad?.yesterday?.confirmed_orders || 0 }})</div>
               </div>
               <div class="metric-label">Trips Executed</div>
               <div class="metric-value mt-2 text-gray-500">{{ formatWeight(dashboardData.last_mile_icad?.yesterday?.total_weight || 0) }}</div>
@@ -285,8 +285,8 @@
             <div class="border-b border-gray-200 pb-3 mb-3">
               <div class="text-sm font-semibold text-gray-600 mb-2">Today</div>
               <div class="flex items-center justify-center gap-2">
-                <div class="metric-value" style="margin-left: 6rem;">{{ dashboardData.last_mile_dic?.total_orders || 0 }}</div>
-                <div class="text-xs text-gray-400">(Appt. made: {{ dashboardData.last_mile_dic?.confirmed_orders || 0 }})</div>
+                <div class="metric-value" style="margin-left: 4rem;">{{ dashboardData.last_mile_dic?.total_orders || 0 }}</div>
+                <div class="text-xs text-gray-400">(Apt: {{ dashboardData.last_mile_dic?.confirmed_orders || 0 }})</div>
               </div>
               <div class="metric-label">Trips Executed</div>
               <div class="metric-value mt-2 text-green-600">{{ formatWeight(dashboardData.last_mile_dic?.total_weight || 0) }}</div>
@@ -298,8 +298,8 @@
             <div>
               <div class="text-sm font-semibold text-gray-600 mb-2">Yesterday</div>
               <div class="flex items-center justify-center gap-2">
-                <div class="metric-value text-gray-500" style="margin-left: 6rem;">{{ dashboardData.last_mile_dic?.yesterday?.total_orders || 0 }}</div>
-                <div class="text-xs text-gray-400">(Appt. made: {{ dashboardData.last_mile_dic?.yesterday?.confirmed_orders || 0 }})</div>
+                <div class="metric-value text-gray-500" style="margin-left: 4rem;">{{ dashboardData.last_mile_dic?.yesterday?.total_orders || 0 }}</div>
+                <div class="text-xs text-gray-400">(Apt: {{ dashboardData.last_mile_dic?.yesterday?.confirmed_orders || 0 }})</div>
               </div>
               <div class="metric-label">Trips Executed</div>
               <div class="metric-value mt-2 text-gray-500">{{ formatWeight(dashboardData.last_mile_dic?.yesterday?.total_weight || 0) }}</div>
