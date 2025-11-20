@@ -357,7 +357,11 @@ export default {
                   
                   // Weight information
                   if (order.x_studio_total_weight_tons && order.x_studio_total_weight_tons > 0) {
-                    lines.push(`Weight: ${order.x_studio_total_weight_tons.toFixed(1)} tons`);
+                    const formattedWeight = order.x_studio_total_weight_tons.toLocaleString('en-US', { 
+                      minimumFractionDigits: 1, 
+                      maximumFractionDigits: 1 
+                    });
+                    lines.push(`Weight: ${formattedWeight} tons`);
                   }
                   
                   return lines;

@@ -107,6 +107,23 @@ class OdooAPI:
         
         return start_of_day_utc, end_of_day_utc
     
+    def get_current_month_range(self):
+        """Get start and end of current month in UAE timezone, converted to UTC for Odoo queries"""
+        # Get current time in UAE timezone
+        now_uae = datetime.now(self.uae_tz)
+        
+        # First day of current month at 00:00:00 in UAE timezone
+        start_of_month_uae = datetime(now_uae.year, now_uae.month, 1, 0, 0, 0, tzinfo=self.uae_tz)
+        
+        # Current time in UAE timezone (end of range)
+        end_of_range_uae = now_uae
+        
+        # Convert to UTC for Odoo queries (Odoo stores times in UTC)
+        start_of_month_utc = start_of_month_uae.astimezone(timezone.utc)
+        end_of_range_utc = end_of_range_uae.astimezone(timezone.utc)
+        
+        return start_of_month_utc, end_of_range_utc
+    
     def _enrich_orders_with_weight_data(self, orders):
         """Enrich forwarding orders with weight data from freight orders"""
         try:
@@ -230,19 +247,26 @@ class OdooAPI:
         now_uae = datetime.now(self.uae_tz)
         fourteen_days_ago = now_uae - timedelta(days=14)
         
+        # Get current month range
+        month_start_utc, month_end_utc = self.get_current_month_range()
+        month_start = month_start_utc.astimezone(self.uae_tz)
+        
         # Convert to UTC for Odoo queries (Odoo stores times in UTC)
         fourteen_days_ago_utc = fourteen_days_ago.astimezone(timezone.utc)
         current_week_start_utc = current_week_start.astimezone(timezone.utc)
         now_utc = now_uae.astimezone(timezone.utc)
         
-        # Format dates for Odoo - use 14 days ago instead of just 2 weeks
-        last_14_days_str = fourteen_days_ago_utc.strftime('%Y-%m-%d %H:%M:%S')
+        # Use the earlier of month_start or 14 days ago to ensure we fetch all necessary data
+        query_start_utc = min(month_start_utc, fourteen_days_ago_utc)
+        
+        # Format dates for Odoo
+        query_start_str = query_start_utc.strftime('%Y-%m-%d %H:%M:%S')
         current_week_str = current_week_start_utc.strftime('%Y-%m-%d %H:%M:%S')
         now_str = now_utc.strftime('%Y-%m-%d %H:%M:%S')
         
         domain = [
             ['x_studio_selection_field_83c_1ig067df9', 'in', ['NDP Train Departed', 'Train Arrived at Destination']],
-            ['x_studio_actual_train_departure', '>=', last_14_days_str],
+            ['x_studio_actual_train_departure', '>=', query_start_str],
             ['x_studio_actual_train_departure', '<', now_str]
         ]
         
@@ -267,6 +291,7 @@ class OdooAPI:
         last_week_orders = []
         today_orders = []
         yesterday_orders = []
+        current_month_orders = []
         daily_counts = {}
         
         # Calculate last week start (Monday of previous week)
@@ -279,9 +304,9 @@ class OdooAPI:
         for order in orders:
             departure_str = order['x_studio_actual_train_departure']
             if departure_str:
-                # Parse datetime and assume it's in UAE timezone
-                departure_dt = datetime.strptime(departure_str, '%Y-%m-%d %H:%M:%S')
-                departure_dt = departure_dt.replace(tzinfo=self.uae_tz)
+                # Parse datetime from UTC and convert to UAE timezone
+                departure_dt_utc = datetime.strptime(departure_str, '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc)
+                departure_dt = departure_dt_utc.astimezone(self.uae_tz)
                 
                 # Check if this order is from today
                 if departure_dt.date() == today_date:
@@ -289,6 +314,10 @@ class OdooAPI:
                 # Check if this order is from yesterday
                 elif departure_dt.date() == yesterday_date:
                     yesterday_orders.append(order)
+                
+                # Check if this order is from current month
+                if departure_dt >= month_start:
+                    current_month_orders.append(order)
                 
                 # Determine week - only count orders within specific week ranges
                 if departure_dt >= current_week_start:
@@ -331,12 +360,14 @@ class OdooAPI:
         last_week_trains = group_orders_by_train(last_week_orders)
         today_trains = group_orders_by_train(today_orders)
         yesterday_trains = group_orders_by_train(yesterday_orders)
+        current_month_trains = group_orders_by_train(current_month_orders)
         
         # Calculate weight totals (sum of all train weights)
         current_week_weight = sum(train['total_weight'] for train in current_week_trains)
         last_week_weight = sum(train['total_weight'] for train in last_week_trains)
         today_weight = sum(train['total_weight'] for train in today_trains)
         yesterday_weight = sum(train['total_weight'] for train in yesterday_trains)
+        current_month_weight = sum(train['total_weight'] for train in current_month_trains)
         
         return {
             # Train counts instead of order counts
@@ -344,21 +375,25 @@ class OdooAPI:
             'last_week_count': len(last_week_trains),
             'today_count': len(today_trains),
             'yesterday_count': len(yesterday_trains),
+            'current_month_count': len(current_month_trains),
             # Total weights remain the same
             'current_week_weight': current_week_weight,
             'last_week_weight': last_week_weight,
             'today_weight': today_weight,
             'yesterday_weight': yesterday_weight,
+            'current_month_weight': current_month_weight,
             # Train data for calculating averages
             'current_week_trains': current_week_trains,
             'last_week_trains': last_week_trains,
             'today_trains': today_trains,
             'yesterday_trains': yesterday_trains,
+            'current_month_trains': current_month_trains,
             'daily_counts': daily_counts,
             'current_week_orders': current_week_orders,
             'last_week_orders': last_week_orders,
             'today_orders': today_orders,
             'yesterday_orders': yesterday_orders,
+            'current_month_orders': current_month_orders,
             'orders': orders  # Add the raw orders list here
         }
     
@@ -473,7 +508,7 @@ class OdooAPI:
         start_of_yesterday_utc = start_of_yesterday_uae.astimezone(timezone.utc)
         end_of_yesterday_utc = end_of_yesterday_uae.astimezone(timezone.utc)
         
-        # Get today's orders
+        # Get today's orders (trips executed = gate-out completed)
         today_domain = [
             ['x_studio_terminal', '=', terminal],
             ['x_studio_selection_field_Vik7G', 'in', ['Gate-out Completed', 'Order Completed and Closed']],
@@ -484,10 +519,24 @@ class OdooAPI:
         today_orders = self.execute_kw(
             'x_last_mile_freight', 'search_read',
             [today_domain],
-            {'fields': ['x_studio_net_weight_ton', 'x_studio_actual_date_and_time_of_gate_out', 'x_studio_selection_field_Vik7G']}
+            {'fields': ['x_studio_net_weight_ton', 'x_studio_actual_date_and_time_of_gate_out', 'x_studio_selection_field_Vik7G', 'x_studio_confirmed']}
         )
         
-        # Get yesterday's orders
+        # Get confirmed orders with scheduled gate-in today
+        # This includes confirmed appointments regardless of whether trip has started
+        confirmed_today_domain = [
+            ['x_studio_terminal', '=', terminal],
+            ['x_studio_confirmed', '=', True],
+            ['x_studio_scheduled_truck_gate_in_date_time', '>=', start_of_today.strftime('%Y-%m-%d %H:%M:%S')],
+            ['x_studio_scheduled_truck_gate_in_date_time', '<=', end_of_today.strftime('%Y-%m-%d %H:%M:%S')]
+        ]
+        
+        confirmed_orders_today = self.execute_kw(
+            'x_last_mile_freight', 'search_count',
+            [confirmed_today_domain]
+        )
+        
+        # Get yesterday's orders (trips executed = gate-out completed)
         yesterday_domain = [
             ['x_studio_terminal', '=', terminal],
             ['x_studio_selection_field_Vik7G', 'in', ['Gate-out Completed', 'Order Completed and Closed']],
@@ -498,25 +547,42 @@ class OdooAPI:
         yesterday_orders = self.execute_kw(
             'x_last_mile_freight', 'search_read',
             [yesterday_domain],
-            {'fields': ['x_studio_net_weight_ton', 'x_studio_actual_date_and_time_of_gate_out', 'x_studio_selection_field_Vik7G']}
+            {'fields': ['x_studio_net_weight_ton', 'x_studio_actual_date_and_time_of_gate_out', 'x_studio_selection_field_Vik7G', 'x_studio_confirmed']}
+        )
+        
+        # Get confirmed orders with scheduled gate-in yesterday
+        confirmed_yesterday_domain = [
+            ['x_studio_terminal', '=', terminal],
+            ['x_studio_confirmed', '=', True],
+            ['x_studio_scheduled_truck_gate_in_date_time', '>=', start_of_yesterday_utc.strftime('%Y-%m-%d %H:%M:%S')],
+            ['x_studio_scheduled_truck_gate_in_date_time', '<=', end_of_yesterday_utc.strftime('%Y-%m-%d %H:%M:%S')]
+        ]
+        
+        confirmed_orders_yesterday = self.execute_kw(
+            'x_last_mile_freight', 'search_count',
+            [confirmed_yesterday_domain]
         )
         
         # Calculate totals for today
         total_orders_today = len(today_orders)
         total_weight_today = sum(order.get('x_studio_net_weight_ton', 0) for order in today_orders)
+        # confirmed_orders_today already calculated from separate query above
         
         # Calculate totals for yesterday
         total_orders_yesterday = len(yesterday_orders)
         total_weight_yesterday = sum(order.get('x_studio_net_weight_ton', 0) for order in yesterday_orders)
+        # confirmed_orders_yesterday already calculated from separate query above
         
         return {
             'total_orders': total_orders_today,
             'total_weight': total_weight_today,
+            'confirmed_orders': confirmed_orders_today,
             'orders': today_orders,
             'terminal': terminal,
             'yesterday': {
                 'total_orders': total_orders_yesterday,
                 'total_weight': total_weight_yesterday,
+                'confirmed_orders': confirmed_orders_yesterday,
                 'orders': yesterday_orders
             }
         }

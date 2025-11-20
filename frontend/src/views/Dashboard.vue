@@ -174,8 +174,8 @@
             <div class="metric-label">Yesterday Avg per Train (tons)</div>
           </div>
           <div class="text-center">
-            <div class="metric-value text-green-600">{{ getAverageWeightForPeriod('today') }}</div>
-            <div class="metric-label">Today Avg per Train (tons)</div>
+            <div class="metric-value text-green-600">{{ getMonthlyTotal() }}</div>
+            <div class="metric-label">This Month Total (tons)</div>
           </div>
 
         </div>
@@ -221,21 +221,21 @@
             <div class="border-b border-gray-200 pb-3 mb-3">
               <div class="text-sm font-semibold text-gray-600 mb-2">Today</div>
               <div class="metric-value">{{ dashboardData.first_mile_truck?.total_orders || 0 }}</div>
-              <div class="metric-label">Orders</div>
+              <div class="metric-label">Trips Executed</div>
               <div class="metric-value mt-2 text-green-600">{{ formatWeight(dashboardData.first_mile_truck?.total_weight || 0) }}</div>
               <div class="metric-label">Weight (tons)</div>
               <div class="metric-value mt-2 text-blue-600">{{ getAverageWeight(dashboardData.first_mile_truck) }}</div>
-              <div class="metric-label">Avg per Order (tons)</div>
+              <div class="metric-label">Avg per Trips Executed (tons)</div>
             </div>
             <!-- Yesterday's Data -->
             <div>
               <div class="text-sm font-semibold text-gray-600 mb-2">Yesterday</div>
               <div class="metric-value text-gray-500">{{ dashboardData.first_mile_truck?.yesterday?.total_orders || 0 }}</div>
-              <div class="metric-label">Orders</div>
+              <div class="metric-label">Trips Executed</div>
               <div class="metric-value mt-2 text-gray-500">{{ formatWeight(dashboardData.first_mile_truck?.yesterday?.total_weight || 0) }}</div>
               <div class="metric-label">Weight (tons)</div>
               <div class="metric-value mt-2 text-gray-500">{{ getAverageWeight(dashboardData.first_mile_truck?.yesterday) }}</div>
-              <div class="metric-label">Avg per Order (tons)</div>
+              <div class="metric-label">Avg per Trips Executed (tons)</div>
             </div>
           </div>
           </div> <!-- End p-4 padding -->
@@ -249,22 +249,28 @@
             <!-- Today's Data -->
             <div class="border-b border-gray-200 pb-3 mb-3">
               <div class="text-sm font-semibold text-gray-600 mb-2">Today</div>
-              <div class="metric-value">{{ dashboardData.last_mile_icad?.total_orders || 0 }}</div>
-              <div class="metric-label">Orders</div>
+              <div class="flex items-center justify-center gap-2">
+                <div class="metric-value" style="margin-left: 6rem;">{{ dashboardData.last_mile_icad?.total_orders || 0 }}</div>
+                <div class="text-xs text-gray-400">(Appt. made: {{ dashboardData.last_mile_icad?.confirmed_orders || 0 }})</div>
+              </div>
+              <div class="metric-label">Trips Executed</div>
               <div class="metric-value mt-2 text-green-600">{{ formatWeight(dashboardData.last_mile_icad?.total_weight || 0) }}</div>
               <div class="metric-label">Weight (tons)</div>
               <div class="metric-value mt-2 text-blue-600">{{ getAverageWeight(dashboardData.last_mile_icad) }}</div>
-              <div class="metric-label">Avg per Order (tons)</div>
+              <div class="metric-label">Avg per Trips Executed (tons)</div>
             </div>
             <!-- Yesterday's Data -->
             <div>
               <div class="text-sm font-semibold text-gray-600 mb-2">Yesterday</div>
-              <div class="metric-value text-gray-500">{{ dashboardData.last_mile_icad?.yesterday?.total_orders || 0 }}</div>
-              <div class="metric-label">Orders</div>
+              <div class="flex items-center justify-center gap-2">
+                <div class="metric-value text-gray-500" style="margin-left: 6rem;">{{ dashboardData.last_mile_icad?.yesterday?.total_orders || 0 }}</div>
+                <div class="text-xs text-gray-400">(Appt. made: {{ dashboardData.last_mile_icad?.yesterday?.confirmed_orders || 0 }})</div>
+              </div>
+              <div class="metric-label">Trips Executed</div>
               <div class="metric-value mt-2 text-gray-500">{{ formatWeight(dashboardData.last_mile_icad?.yesterday?.total_weight || 0) }}</div>
               <div class="metric-label">Weight (tons)</div>
               <div class="metric-value mt-2 text-gray-500">{{ getAverageWeight(dashboardData.last_mile_icad?.yesterday) }}</div>
-              <div class="metric-label">Avg per Order (tons)</div>
+              <div class="metric-label">Avg per Trips Executed (tons)</div>
             </div>
           </div>
           </div> <!-- End p-4 padding -->
@@ -278,22 +284,28 @@
             <!-- Today's Data -->
             <div class="border-b border-gray-200 pb-3 mb-3">
               <div class="text-sm font-semibold text-gray-600 mb-2">Today</div>
-              <div class="metric-value">{{ dashboardData.last_mile_dic?.total_orders || 0 }}</div>
-              <div class="metric-label">Orders</div>
+              <div class="flex items-center justify-center gap-2">
+                <div class="metric-value" style="margin-left: 6rem;">{{ dashboardData.last_mile_dic?.total_orders || 0 }}</div>
+                <div class="text-xs text-gray-400">(Appt. made: {{ dashboardData.last_mile_dic?.confirmed_orders || 0 }})</div>
+              </div>
+              <div class="metric-label">Trips Executed</div>
               <div class="metric-value mt-2 text-green-600">{{ formatWeight(dashboardData.last_mile_dic?.total_weight || 0) }}</div>
               <div class="metric-label">Weight (tons)</div>
               <div class="metric-value mt-2 text-blue-600">{{ getAverageWeight(dashboardData.last_mile_dic) }}</div>
-              <div class="metric-label">Avg per Order (tons)</div>
+              <div class="metric-label">Avg per Trips Executed (tons)</div>
             </div>
             <!-- Yesterday's Data -->
             <div>
               <div class="text-sm font-semibold text-gray-600 mb-2">Yesterday</div>
-              <div class="metric-value text-gray-500">{{ dashboardData.last_mile_dic?.yesterday?.total_orders || 0 }}</div>
-              <div class="metric-label">Orders</div>
+              <div class="flex items-center justify-center gap-2">
+                <div class="metric-value text-gray-500" style="margin-left: 6rem;">{{ dashboardData.last_mile_dic?.yesterday?.total_orders || 0 }}</div>
+                <div class="text-xs text-gray-400">(Appt. made: {{ dashboardData.last_mile_dic?.yesterday?.confirmed_orders || 0 }})</div>
+              </div>
+              <div class="metric-label">Trips Executed</div>
               <div class="metric-value mt-2 text-gray-500">{{ formatWeight(dashboardData.last_mile_dic?.yesterday?.total_weight || 0) }}</div>
               <div class="metric-label">Weight (tons)</div>
               <div class="metric-value mt-2 text-gray-500">{{ getAverageWeight(dashboardData.last_mile_dic?.yesterday) }}</div>
-              <div class="metric-label">Avg per Order (tons)</div>
+              <div class="metric-label">Avg per Trips Executed (tons)</div>
             </div>
           </div>
           </div> <!-- End p-4 padding -->
@@ -455,11 +467,14 @@ export default {
     }
 
     const formatWeight = (weight) => {
+      let roundedWeight
       if (rounding.value === 0) {
-        return Math.round(weight)
+        roundedWeight = Math.round(weight)
       } else {
-        return (Math.round(weight / rounding.value) * rounding.value).toFixed(0)
+        roundedWeight = Math.round(weight / rounding.value) * rounding.value
       }
+      // Add thousands separator
+      return roundedWeight.toLocaleString('en-US')
     }
 
     const getAverageWeight = (truckData) => {
@@ -500,6 +515,14 @@ export default {
 
       if (trainCount === 0) return 'N/A'
       return formatWeight(totalWeight / trainCount)
+    }
+
+    const getMonthlyTotal = () => {
+      const fwoData = dashboardData.value.forwarding_orders
+      if (!fwoData) return 'N/A'
+      
+      const totalWeight = fwoData.current_month_weight || 0
+      return formatWeight(totalWeight)
     }
 
     const getTodayCount = () => {
@@ -681,6 +704,7 @@ export default {
       formatWeight,
       getAverageWeight,
       getAverageWeightForPeriod,
+      getMonthlyTotal,
       getTodayCount,
       getFilteredStockpiles,
       getAverageStockpileAge,

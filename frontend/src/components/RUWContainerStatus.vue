@@ -30,19 +30,19 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <!-- Total Containers -->
         <div class="text-center border-r border-gray-200 last:border-r-0">
-          <div class="metric-value text-blue-600">{{ data.total }}</div>
+          <div class="metric-value text-blue-600">{{ data.total.toLocaleString('en-US') }}</div>
           <div class="metric-label">Total Containers</div>
         </div>
 
         <!-- Loaded Containers -->
         <div class="text-center border-r border-gray-200 last:border-r-0">
-          <div class="metric-value text-green-600">{{ data.loaded }}</div>
+          <div class="metric-value text-green-600">{{ data.loaded.toLocaleString('en-US') }}</div>
           <div class="metric-label">Loaded ({{ data.loaded_percentage }}%)</div>
         </div>
 
         <!-- Empty Containers -->
         <div class="text-center">
-          <div class="metric-value text-gray-600">{{ data.empty }}</div>
+          <div class="metric-value text-gray-600">{{ data.empty.toLocaleString('en-US') }}</div>
           <div class="metric-label">Empty ({{ data.empty_percentage }}%)</div>
         </div>
       </div>
@@ -51,20 +51,20 @@
       <div class="mb-6">
         <div class="flex items-center justify-between mb-2">
           <span class="text-sm font-medium text-gray-700">Container Status Distribution</span>
-          <span class="text-sm text-gray-500">{{ data.total }} containers</span>
+          <span class="text-sm text-gray-500">{{ data.total.toLocaleString('en-US') }} containers</span>
         </div>
         <div class="w-full bg-gray-200 rounded-full h-6 overflow-hidden flex">
           <div 
             class="bg-green-500 flex items-center justify-center text-white text-xs font-medium transition-all duration-500"
             :style="{ width: data.loaded_percentage + '%' }"
           >
-            <span v-if="data.loaded_percentage > 15">{{ data.loaded }} Loaded</span>
+            <span v-if="data.loaded_percentage > 15">{{ data.loaded.toLocaleString('en-US') }} Loaded</span>
           </div>
           <div 
             class="bg-gray-400 flex items-center justify-center text-white text-xs font-medium transition-all duration-500"
             :style="{ width: data.empty_percentage + '%' }"
           >
-            <span v-if="data.empty_percentage > 15">{{ data.empty }} Empty</span>
+            <span v-if="data.empty_percentage > 15">{{ data.empty.toLocaleString('en-US') }} Empty</span>
           </div>
         </div>
       </div>
